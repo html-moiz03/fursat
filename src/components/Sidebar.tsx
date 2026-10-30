@@ -1,7 +1,7 @@
 import { usePlannerStore } from '../store/usePlannerStore';
 import { InstallButton } from './InstallButton';
 
-export type View = 'today' | 'anchors';
+export type View = 'today' | 'week' | 'anchors';
 
 const icon = 'h-5 w-5 shrink-0';
 
@@ -10,6 +10,15 @@ function TodayIcon() {
     <svg className={icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
       <rect x="3.5" y="5" width="17" height="15" rx="3" />
       <path d="M3.5 10h17M8 3v4M16 3v4" />
+    </svg>
+  );
+}
+
+function WeekIcon() {
+  return (
+    <svg className={icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3.5" y="5" width="17" height="15" rx="3" />
+      <path d="M8.5 9v7M12 9v7M15.5 9v7" />
     </svg>
   );
 }
@@ -41,13 +50,14 @@ function Brand() {
 
 const ITEMS: { view: View; label: string; Icon: () => React.JSX.Element }[] = [
   { view: 'today', label: 'Today', Icon: TodayIcon },
+  { view: 'week', label: 'Week', Icon: WeekIcon },
   { view: 'anchors', label: 'Anchors', Icon: AnchorsIcon },
 ];
 
 export function Sidebar({ view, onChange }: { view: View; onChange: (v: View) => void }) {
   const inboxCount = usePlannerStore((s) => s.tasks.filter((t) => t.status === 'inbox').length);
   const anchorCount = usePlannerStore((s) => s.anchors.filter((a) => a.source === 'manual').length);
-  const counts: Record<View, number> = { today: inboxCount, anchors: anchorCount };
+  const counts: Record<View, number> = { today: inboxCount, week: 0, anchors: anchorCount };
 
   return (
     <>

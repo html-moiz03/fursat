@@ -26,6 +26,8 @@ npm run build    # type-check + production build
 - Proportional timeline with a live "now" line that updates every minute
 - Prayer times: enter a city and Fajr, Dhuhr, Asr, Maghrib and Isha are fetched from the AlAdhan API and added as anchors, so prayer time is never counted as free. Months load as you open them and stay cached for offline use
 - Day hours: choose when your day starts and ends (Anchors page). If a prayer falls outside, such as an early Fajr, the Today view offers a one-click "Show it". Tasks outside the hours are clipped and flagged
+- Week view: seven days side by side with what is fixed and planned, free time per day, and a weekly total. Click a day to open it
+- Carry-over: tasks planned for an earlier day and never ticked off show a notice on Today. "Move to today" fits them into what is left of today (oldest first, a task with no room goes to the inbox); "Back to inbox" unplans them instead
 - Installable as an app (phone home screen or desktop) and works offline: the whole app is cached by a service worker, with a quiet "update ready" notice when a new version is deployed
 - A new visitor starts empty, with a one-click sample day; "Clear all data" is on the Anchors page
 - Everything is saved in the browser (localStorage). The only thing sent out is the city and country you enter for prayer times
@@ -47,11 +49,15 @@ src/
   store/useInstall.ts       keeps the browser's install prompt for the Install button
   lib/dayWindow.ts          day-hour options, suggestWindow(), tasksOutside()
   lib/dayWindow.test.ts     11 tests for the day-hours rules
+  lib/week.ts               weekDates() and dayOverview() for the week view
+  lib/week.test.ts          tests for week boundaries and the per-day overview
+  lib/carryOver.ts          overdueTasks() and planCarryOver()
+  lib/carryOver.test.ts     tests for the carry-over rules
   lib/fit.ts                freeRanges(), checkFit(), fitFrom(), placedOn(), hasConflict()
   lib/fit.test.ts           35 tests for the task-fitting rules
   store/usePlannerStore.ts  Zustand store, persisted under "fursat:v1"
-  store/usePlannerStore.test.ts  7 tests for editing anchors and moving placed tasks
-  components/               Sidebar, Greeting, EmptyStart, PlannerDnd (drag and drop), MonthCalendar, Timeline, TaskInbox, TaskBlock, DaySummary, AnchorForm, AnchorList, DataControls, PrayerCard, DayHoursCard, WindowNotice, InstallButton, PwaStatus, Card
+  store/usePlannerStore.test.ts  10 tests for editing anchors, moving placed tasks and carry-over
+  components/               Sidebar, Greeting, EmptyStart, PlannerDnd (drag and drop), MonthCalendar, Timeline, TaskInbox, TaskBlock, DaySummary, AnchorForm, AnchorList, DataControls, PrayerCard, DayHoursCard, WindowNotice, WeekView, CarryOverNotice, InstallButton, PwaStatus, Card
 ```
 
 Times are stored as minutes since midnight and dates as `YYYY-MM-DD` strings, so the gap maths is plain integer work with no timezone bugs.
@@ -59,4 +65,4 @@ Times are stored as minutes since midnight and dates as `YYYY-MM-DD` strings, so
 ## Next steps
 
 1. Resize a placed task, keyboard-only moving, edit prayer settings per prayer
-2. Weekly view, carry-over of unfinished tasks, then optional Supabase sync
+2. Drag tasks between days in the week view, then optional Supabase sync

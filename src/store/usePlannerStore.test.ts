@@ -38,6 +38,41 @@ describe('updateAnchor', () => {
   });
 });
 
+describe('carrying over unfinished tasks', () => {
+  beforeEach(reset);
+
+  const plannedOn = (title: string, date: string, startMin: number, durationMin = 60) => ({
+    id: title, title, durationMin, status: 'planned' as const, date, startMin, createdAt: 0,
+  });
+
+  it('moves overdue tasks into today and leaves done and future ones alone', () => {
+    usePlannerStore.setState({
+      tasks: [
+        plannedOn('old', '2026-10-30', 600),
+        { ...plannedOn('finished', '2026-10-30', 700), status: 'done' as const },
+        plannedOn('future', '2026-11-05', 600),
+      ],
+    });
+    expect(st().carryOverdue(DATE, 600)).toEqual({ moved: 1, inbox: 0 });
+    const byId = Object.fromEntries(st().tasks.map((t) => [t.id, t]));
+    expect(byId.old).toMatchObject({ status: 'planned', date: DATE, startMin: 600 });
+    expect(byId.finished).toMatchObject({ status: 'done', date: '2026-10-30' });
+    expect(byId.future).toMatchObject({ date: '2026-11-05' });
+  });
+
+  it('sends what does not fit to the inbox', () => {
+    usePlannerStore.setState({ tasks: [plannedOn('old', '2026-10-30', 600)] });
+    expect(st().carryOverdue(DATE, 1370)).toEqual({ moved: 0, inbox: 1 });
+    expect(st().tasks[0]).toMatchObject({ status: 'inbox', date: undefined, startMin: undefined });
+  });
+
+  it('can send everything overdue straight back to the inbox', () => {
+    usePlannerStore.setState({ tasks: [plannedOn('a', '2026-10-30', 600), plannedOn('b', DATE, 600)] });
+    expect(st().inboxOverdue(DATE)).toBe(1);
+    expect(st().tasks.map((t) => t.status)).toEqual(['inbox', 'planned']);
+  });
+});
+
 describe('moving a placed task', () => {
   beforeEach(reset);
 

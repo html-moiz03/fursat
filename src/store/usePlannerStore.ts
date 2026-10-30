@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Anchor, PrayerSettings, Settings, Task } from '../types';
+import { overdueTasks, planCarryOver } from '../lib/carryOver';
 import { fitFrom, placedOn } from '../lib/fit';
 import { computeGaps } from '../lib/gaps';
 import { toMinutes, todayString } from '../lib/time';
@@ -85,6 +86,13 @@ type PlannerState = {
   addPrayerAnchors: (month: string, anchors: Anchor[]) => void;
   /** Send a planned or done task back to the inbox. */
   unplanTask: (id: string) => void;
+  /**
+   * Move unfinished tasks from earlier days into what is left of `today`, from `fromMin` on.
+   * A task with no room left goes to the inbox. Returns how many went where.
+   */
+  carryOverdue: (today: string, fromMin: number) => { moved: number; inbox: number };
+  /** Send every unfinished task from before `today` back to the inbox. Returns how many. */
+  inboxOverdue: (today: string) => number;
   /** Tick a planned task as done, or untick it. */
   toggleDone: (id: string) => void;
   setSelectedDate: (date: string) => void;
@@ -169,6 +177,30 @@ export const usePlannerStore = create<PlannerState>()(
             t.id === id ? { ...t, status: 'inbox', date: undefined, startMin: undefined } : t,
           ),
         })),
+      carryOverdue: (today, fromMin) => {
+        const { tasks, anchors, settings } = get();
+        const plan = planCarryOver(tasks, anchors, today, fromMin, settings);
+        const spots = new Map(plan.moved.map((m) => [m.id, m.startMin]));
+        const back = new Set(plan.toInbox);
+        set({
+          tasks: tasks.map((t) => {
+            const spot = spots.get(t.id);
+            if (spot !== undefined) return { ...t, status: 'planned', date: today, startMin: spot };
+            if (back.has(t.id)) return { ...t, status: 'inbox', date: undefined, startMin: undefined };
+            return t;
+          }),
+        });
+        return { moved: plan.moved.length, inbox: plan.toInbox.length };
+      },
+      inboxOverdue: (today) => {
+        const ids = new Set(overdueTasks(get().tasks, today).map((t) => t.id));
+        set((s) => ({
+          tasks: s.tasks.map((t) =>
+            ids.has(t.id) ? { ...t, status: 'inbox', date: undefined, startMin: undefined } : t,
+          ),
+        }));
+        return ids.size;
+      },
       toggleDone: (id) =>
         set((s) => ({
           tasks: s.tasks.map((t) =>

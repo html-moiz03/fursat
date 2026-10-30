@@ -16,8 +16,11 @@ import { Sidebar, type View } from './components/Sidebar';
 import { TaskInbox } from './components/TaskInbox';
 import { Timeline } from './components/Timeline';
 import { WindowNotice } from './components/WindowNotice';
+import { CarryOverNotice } from './components/CarryOverNotice';
+import { WeekView } from './components/WeekView';
 import { addDays, todayString } from './lib/time';
 import { usePrayerSync } from './lib/usePrayerSync';
+import { weekDates } from './lib/week';
 import { usePlannerStore } from './store/usePlannerStore';
 
 function prettyDate(date: string): string {
@@ -29,12 +32,29 @@ function prettyDate(date: string): string {
   });
 }
 
+function weekLabel(date: string): string {
+  const days = weekDates(date);
+  const [first, last] = [days[0], days[6]].map((d) => {
+    const [y, m, day] = d.split('-').map(Number);
+    return new Date(y, m - 1, day);
+  });
+  const monthYear = last.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  if (first.getMonth() === last.getMonth()) return `${first.getDate()}–${last.getDate()} ${monthYear}`;
+  const start = first.toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+  const end = last.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+  return `${start} – ${end}`;
+}
+
 export default function App() {
-  usePrayerSync();
   const [view, setView] = useState<View>('today');
   const selectedDate = usePlannerStore((s) => s.selectedDate);
   const setSelectedDate = usePlannerStore((s) => s.setSelectedDate);
   const isEmpty = usePlannerStore((s) => s.anchors.length === 0 && s.tasks.length === 0);
+  // A week can cross into the next month, so its last day's month is fetched too.
+  usePrayerSync(view === 'week' ? weekDates(selectedDate)[6] : undefined);
+
+  const step = view === 'week' ? 7 : 1;
+  const unit = view === 'week' ? 'week' : 'day';
 
   const navButton =
     'rounded-lg border border-line bg-card px-3 py-1.5 text-sm text-ink hover:bg-brand-soft';
@@ -51,16 +71,16 @@ export default function App() {
               <InstallButton />
             </div>
             <h1 className="text-2xl font-semibold tracking-tight">
-              {view === 'today' ? prettyDate(selectedDate) : 'Anchors'}
+              {view === 'today' ? prettyDate(selectedDate) : view === 'week' ? weekLabel(selectedDate) : 'Anchors'}
             </h1>
             <div className="flex items-center gap-2">
-              <button className={navButton} onClick={() => setSelectedDate(addDays(selectedDate, -1))} aria-label="Previous day">
+              <button className={navButton} onClick={() => setSelectedDate(addDays(selectedDate, -step))} aria-label={`Previous ${unit}`}>
                 ←
               </button>
               <button className={navButton} onClick={() => setSelectedDate(todayString())}>
-                Today
+                {view === 'week' ? 'This week' : 'Today'}
               </button>
-              <button className={navButton} onClick={() => setSelectedDate(addDays(selectedDate, 1))} aria-label="Next day">
+              <button className={navButton} onClick={() => setSelectedDate(addDays(selectedDate, step))} aria-label={`Next ${unit}`}>
                 →
               </button>
             </div>
@@ -73,6 +93,7 @@ export default function App() {
                   {isEmpty && <EmptyStart onAddAnchor={() => setView('anchors')} />}
                   <Greeting />
                   <Card>
+                    <CarryOverNotice />
                     <WindowNotice />
                     <DaySummary />
                     <Timeline />
@@ -88,6 +109,13 @@ export default function App() {
                 </div>
               </div>
             </PlannerDnd>
+          ) : view === 'week' ? (
+            <WeekView
+              onOpenDay={(date) => {
+                setSelectedDate(date);
+                setView('today');
+              }}
+            />
           ) : (
             <div className="grid max-w-4xl items-start gap-8 md:grid-cols-2">
               <div className="space-y-8">
