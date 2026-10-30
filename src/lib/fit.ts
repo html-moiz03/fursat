@@ -81,6 +81,20 @@ export function hasConflict(task: Task, anchors: Anchor[], settings: GapSettings
 }
 
 /**
+ * Earliest start for a task of `durationMin` anywhere in `gaps`, at or after `fromMin`,
+ * with `placed` time taken out. Null when it fits nowhere.
+ */
+export function earliestSlot(durationMin: number, gaps: Range[], placed: Range[], fromMin = 0): number | null {
+  for (const g of gaps) {
+    const gap: Range = { startMin: Math.max(g.startMin, fromMin), endMin: g.endMin };
+    if (gap.endMin <= gap.startMin) continue;
+    const verdict = checkFit(durationMin, gap, placed);
+    if (verdict.fits) return verdict.startMin;
+  }
+  return null;
+}
+
+/**
  * Earliest fit for a task at or after `fromMin`, inside the gap that contains `fromMin`.
  * Returns null when `fromMin` is not inside any gap. Passing a gap's own start asks about the whole gap.
  */

@@ -1,5 +1,5 @@
 import type { Anchor, GapSettings, Task } from '../types';
-import { checkFit, placedOn, type Range } from './fit';
+import { earliestSlot, placedOn, type Range } from './fit';
 import { computeGaps } from './gaps';
 
 /** Tasks that were planned for a day before `today` and never ticked off, oldest first. */
@@ -28,23 +28,12 @@ export function planCarryOver(
   fromMin: number,
   settings: GapSettings,
 ): CarryPlan {
-  const overdue = overdueTasks(tasks, today);
   const placed: Range[] = placedOn(tasks, today);
-  const gaps = computeGaps(anchors, today, { ...settings, minGapMin: 0 })
-    .map((g): Range => ({ startMin: Math.max(g.startMin, fromMin), endMin: g.endMin }))
-    .filter((g) => g.endMin > g.startMin);
-
+  const gaps = computeGaps(anchors, today, { ...settings, minGapMin: 0 });
   const plan: CarryPlan = { moved: [], toInbox: [] };
 
-  for (const task of overdue) {
-    let spot: number | null = null;
-    for (const gap of gaps) {
-      const verdict = checkFit(task.durationMin, gap, placed);
-      if (verdict.fits) {
-        spot = verdict.startMin;
-        break;
-      }
-    }
+  for (const task of overdueTasks(tasks, today)) {
+    const spot = earliestSlot(task.durationMin, gaps, placed, fromMin);
     if (spot === null) {
       plan.toInbox.push(task.id);
     } else {

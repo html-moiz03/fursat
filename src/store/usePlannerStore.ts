@@ -5,6 +5,7 @@ import { overdueTasks, planCarryOver } from '../lib/carryOver';
 import { fitFrom, placedOn } from '../lib/fit';
 import { computeGaps } from '../lib/gaps';
 import { toMinutes, todayString } from '../lib/time';
+import { slotOnDay } from '../lib/week';
 
 const sampleAnchors = (): Anchor[] => [
   {
@@ -73,6 +74,11 @@ type PlannerState = {
    * Returns false (and changes nothing) if it does not fit.
    */
   planTask: (id: string, date: string, fromMin: number) => boolean;
+  /**
+   * Put a task on `date` at the earliest free time at or after `fromMin`, wherever in the day that is.
+   * Used when a task is dropped on a day in the week view. Returns false (and changes nothing) if the day has no room.
+   */
+  planTaskOnDay: (id: string, date: string, fromMin: number) => boolean;
   /** Replace the anchors with a typical weekday so a new visitor can see the idea. */
   loadSample: () => void;
   /** Remove every anchor and task, and switch prayer times off. */
@@ -146,6 +152,19 @@ export const usePlannerStore = create<PlannerState>()(
             t.id === id
               ? { ...t, status: t.status === 'done' ? 'done' : 'planned', date, startMin: result.startMin }
               : t,
+          ),
+        });
+        return true;
+      },
+      planTaskOnDay: (id, date, fromMin) => {
+        const { tasks, anchors, settings } = get();
+        const task = tasks.find((t) => t.id === id);
+        if (!task) return false;
+        const startMin = slotOnDay(task, anchors, tasks, date, fromMin, settings);
+        if (startMin === null) return false;
+        set({
+          tasks: tasks.map((t) =>
+            t.id === id ? { ...t, status: t.status === 'done' ? 'done' : 'planned', date, startMin } : t,
           ),
         });
         return true;

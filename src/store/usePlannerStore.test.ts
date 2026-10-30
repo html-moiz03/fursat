@@ -73,6 +73,45 @@ describe('carrying over unfinished tasks', () => {
   });
 });
 
+describe('planTaskOnDay', () => {
+  beforeEach(reset);
+  const NEXT = '2026-11-03';
+
+  it('places an inbox task at the earliest free time of the day', () => {
+    st().addAnchor({ title: 'Work', startMin: 360, endMin: 1020, repeatDays: [2], kind: 'work', color: '#111' });
+    st().addTask('Read', 60);
+    const id = st().tasks[0].id;
+    expect(st().planTaskOnDay(id, NEXT, 360)).toBe(true);
+    expect(st().tasks[0]).toMatchObject({ status: 'planned', date: NEXT, startMin: 1020 });
+  });
+
+  it('moves a placed task from one day to another', () => {
+    st().addTask('Read', 60);
+    const id = st().tasks[0].id;
+    st().planTask(id, DATE, 600);
+    expect(st().planTaskOnDay(id, NEXT, 360)).toBe(true);
+    expect(st().tasks[0]).toMatchObject({ date: NEXT, startMin: 360 });
+  });
+
+  it('refuses a full day and leaves the task where it was', () => {
+    st().addAnchor({ title: 'All day', startMin: 360, endMin: 1380, repeatDays: [2], kind: 'work', color: '#111' });
+    st().addTask('Read', 60);
+    const id = st().tasks[0].id;
+    st().planTask(id, DATE, 600);
+    expect(st().planTaskOnDay(id, NEXT, 360)).toBe(false);
+    expect(st().tasks[0]).toMatchObject({ date: DATE, startMin: 600 });
+  });
+
+  it('keeps a done task done', () => {
+    st().addTask('Read', 30);
+    const id = st().tasks[0].id;
+    st().planTask(id, DATE, 600);
+    st().toggleDone(id);
+    st().planTaskOnDay(id, NEXT, 360);
+    expect(st().tasks[0]).toMatchObject({ status: 'done', date: NEXT });
+  });
+});
+
 describe('moving a placed task', () => {
   beforeEach(reset);
 

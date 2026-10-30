@@ -1,6 +1,7 @@
 import type { Anchor, GapSettings, Task } from '../types';
 import { TASK_COLOR, freeZonesFor } from './day';
-import { anchorsForDate } from './gaps';
+import { earliestSlot, placedOn } from './fit';
+import { anchorsForDate, computeGaps } from './gaps';
 import { addDays, weekdayOf } from './time';
 
 /** The Monday of the week that contains `date`. */
@@ -12,6 +13,27 @@ export function weekStart(date: string): string {
 export function weekDates(date: string): string[] {
   const first = weekStart(date);
   return Array.from({ length: 7 }, (_, i) => addDays(first, i));
+}
+
+/** The earliest a task may start on `date`: the day's start, or the next 5 minutes if `date` is today. */
+export function firstStart(date: string, today: string, nowMin: number, dayStartMin: number): number {
+  return date === today ? Math.max(dayStartMin, Math.ceil(nowMin / 5) * 5) : dayStartMin;
+}
+
+/**
+ * Where a task would go if dropped on `date`: the earliest free time that fits, at or after `fromMin`.
+ * The task's own current slot does not block it. Null when the day has no room.
+ */
+export function slotOnDay(
+  task: Task,
+  anchors: Anchor[],
+  tasks: Task[],
+  date: string,
+  fromMin: number,
+  settings: GapSettings,
+): number | null {
+  const gaps = computeGaps(anchors, date, { ...settings, minGapMin: 0 });
+  return earliestSlot(task.durationMin, gaps, placedOn(tasks, date, task.id), fromMin);
 }
 
 export type DayItem = {

@@ -110,12 +110,14 @@ export default function App() {
               </div>
             </PlannerDnd>
           ) : view === 'week' ? (
-            <WeekView
-              onOpenDay={(date) => {
-                setSelectedDate(date);
-                setView('today');
-              }}
-            />
+            <PlannerDnd>
+              <WeekView
+                onOpenDay={(date) => {
+                  setSelectedDate(date);
+                  setView('today');
+                }}
+              />
+            </PlannerDnd>
           ) : (
             <div className="grid max-w-4xl items-start gap-8 md:grid-cols-2">
               <div className="space-y-8">

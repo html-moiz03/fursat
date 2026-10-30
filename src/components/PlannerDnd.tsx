@@ -11,7 +11,8 @@ import {
 } from '@dnd-kit/core';
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import { checkFit, type Range } from '../lib/fit';
-import { formatDuration } from '../lib/time';
+import { formatDuration, nowMinutes, todayString } from '../lib/time';
+import { firstStart } from '../lib/week';
 import type { Task } from '../types';
 import { usePlannerStore } from '../store/usePlannerStore';
 
@@ -21,14 +22,16 @@ const ActiveTaskContext = createContext<Task | null>(null);
 export const useActiveTask = () => useContext(ActiveTaskContext);
 
 /**
- * Lets inbox tasks be dragged into free time on the timeline. The placing rule is
- * still planTask(), so a drop that does not fit is simply ignored. The dropdown in
- * the inbox stays as the keyboard route.
+ * Lets tasks be dragged into free time on the timeline (Today) or onto a day (Week). The
+ * placing rules are planTask() and planTaskOnDay(), so a drop that does not fit is simply
+ * ignored. The dropdown in the inbox stays as the keyboard route.
  */
 export function PlannerDnd({ children }: { children: ReactNode }) {
   const tasks = usePlannerStore((s) => s.tasks);
   const date = usePlannerStore((s) => s.selectedDate);
   const planTask = usePlannerStore((s) => s.planTask);
+  const planTaskOnDay = usePlannerStore((s) => s.planTaskOnDay);
+  const dayStartMin = usePlannerStore((s) => s.settings.dayStartMin);
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -45,6 +48,12 @@ export function PlannerDnd({ children }: { children: ReactNode }) {
   function onDragEnd(e: DragEndEvent) {
     setActiveId(null);
     const task = tasks.find((t) => t.id === e.active.id);
+    // Week view: dropped on a whole day.
+    const day = e.over?.data.current?.day as string | undefined;
+    if (task && day) {
+      planTaskOnDay(task.id, day, firstStart(day, todayString(), nowMinutes(), dayStartMin));
+      return;
+    }
     const zone = e.over?.data.current?.zone as Range | undefined;
     if (!task || !zone) return;
     if (checkFit(task.durationMin, zone, []).fits) planTask(task.id, date, zone.startMin);
