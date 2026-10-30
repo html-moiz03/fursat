@@ -79,3 +79,13 @@ export function hasConflict(task: Task, anchors: Anchor[], settings: GapSettings
 
   return !gaps.some((g) => g.startMin <= start && end <= g.endMin);
 }
+
+/**
+ * Earliest fit for a task at or after `fromMin`, inside the gap that contains `fromMin`.
+ * Returns null when `fromMin` is not inside any gap. Passing a gap's own start asks about the whole gap.
+ */
+export function fitFrom(durationMin: number, gaps: Range[], fromMin: number, placed: Range[]): FitResult | null {
+  const gap = gaps.find((g) => g.startMin <= fromMin && fromMin < g.endMin);
+  if (!gap) return null;
+  return checkFit(durationMin, { startMin: fromMin, endMin: gap.endMin }, placed);
+}

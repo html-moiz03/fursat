@@ -1,3 +1,4 @@
+import { useDraggable } from '@dnd-kit/core';
 import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { checkFit, largestRoom, placedOn } from '../lib/fit';
 import { computeGaps } from '../lib/gaps';
@@ -7,6 +8,29 @@ import { usePlannerStore } from '../store/usePlannerStore';
 const PRESETS = [15, 30, 45, 60, 90, 120];
 const MIN_DURATION = 5;
 const MAX_DURATION = 600;
+
+function DragHandle({ id, title }: { id: string; title: string }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id });
+  return (
+    <button
+      type="button"
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
+      aria-label={`Drag ${title} into a free gap`}
+      title="Drag into a free gap"
+      className={`-ml-1 grid h-7 w-6 shrink-0 cursor-grab touch-none place-items-center rounded-md text-muted hover:bg-page hover:text-ink ${
+        isDragging ? 'opacity-40' : ''
+      }`}
+    >
+      <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+        <circle cx="5" cy="3" r="1.3" /><circle cx="11" cy="3" r="1.3" />
+        <circle cx="5" cy="8" r="1.3" /><circle cx="11" cy="8" r="1.3" />
+        <circle cx="5" cy="13" r="1.3" /><circle cx="11" cy="13" r="1.3" />
+      </svg>
+    </button>
+  );
+}
 
 const field =
   'rounded-lg border border-line bg-page px-2 py-1.5 text-sm text-ink';
@@ -110,7 +134,7 @@ export function TaskInbox() {
       <div>
         <h2 className="mb-2 text-base font-semibold">Inbox ({inbox.length})</h2>
         {inbox.length === 0 ? (
-          <p className="text-sm text-muted">Nothing waiting. Add a task and place it in a free gap.</p>
+          <p className="text-sm text-muted">Nothing waiting. Add a task, then drag it into a free gap.</p>
         ) : (
           <ul className="space-y-2">
             {inbox.map((t) => {
@@ -129,6 +153,7 @@ export function TaskInbox() {
                   className="space-y-1.5 rounded-xl border border-line px-3 py-2 text-sm"
                 >
                   <div className="flex items-center gap-2">
+                    <DragHandle id={t.id} title={t.title} />
                     <span className="flex-1">
                       <span className="font-medium">{t.title}</span>{' '}
                       <span className="text-muted">{formatDuration(t.durationMin)}</span>

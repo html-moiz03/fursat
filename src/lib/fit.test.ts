@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Anchor, Task } from '../types';
-import { checkFit, freeRanges, hasConflict, largestRoom, placedOn } from './fit';
+import { checkFit, fitFrom, freeRanges, hasConflict, largestRoom, placedOn } from './fit';
 
 const MON = '2026-11-02'; // a Monday
 const TUE = '2026-11-03';
@@ -173,5 +173,36 @@ describe('hasConflict', () => {
 
   it('is false for an inbox task', () => {
     expect(hasConflict(task(), [work], settings)).toBe(false);
+  });
+});
+
+describe('fitFrom', () => {
+  const gaps = [
+    { startMin: 360, endMin: 540 }, // 06:00-09:00
+    { startMin: 1020, endMin: 1080 }, // 17:00-18:00
+  ];
+
+  it('treats a gap start as the whole gap', () => {
+    expect(fitFrom(90, gaps, 360, [])).toEqual({ fits: true, startMin: 360 });
+  });
+
+  it('starts at the given minute when it sits inside a gap', () => {
+    expect(fitFrom(60, gaps, 450, [])).toEqual({ fits: true, startMin: 450 });
+  });
+
+  it('only looks at the room from that minute to the end of the gap', () => {
+    expect(fitFrom(90, gaps, 450, [])).toEqual({ fits: true, startMin: 450 }); // exactly 90 left
+    expect(fitFrom(120, gaps, 450, [])).toEqual({ fits: false, shortfallMin: 30 });
+  });
+
+  it('works around tasks already placed after the start', () => {
+    const placed = [{ startMin: 450, endMin: 480 }];
+    expect(fitFrom(60, gaps, 360, placed)).toEqual({ fits: true, startMin: 360 });
+    expect(fitFrom(120, gaps, 360, placed)).toEqual({ fits: false, shortfallMin: 30 });
+  });
+
+  it('returns null outside every gap', () => {
+    expect(fitFrom(30, gaps, 700, [])).toBeNull();
+    expect(fitFrom(30, gaps, 540, [])).toBeNull(); // the end of a gap is not inside it
   });
 });

@@ -2,9 +2,12 @@ import { useState } from 'react';
 import { AnchorForm } from './components/AnchorForm';
 import { AnchorList } from './components/AnchorList';
 import { Card } from './components/Card';
+import { DataControls } from './components/DataControls';
 import { DaySummary } from './components/DaySummary';
+import { EmptyStart } from './components/EmptyStart';
 import { Greeting } from './components/Greeting';
 import { MonthCalendar } from './components/MonthCalendar';
+import { PlannerDnd } from './components/PlannerDnd';
 import { Sidebar, type View } from './components/Sidebar';
 import { TaskInbox } from './components/TaskInbox';
 import { Timeline } from './components/Timeline';
@@ -24,6 +27,7 @@ export default function App() {
   const [view, setView] = useState<View>('today');
   const selectedDate = usePlannerStore((s) => s.selectedDate);
   const setSelectedDate = usePlannerStore((s) => s.setSelectedDate);
+  const isEmpty = usePlannerStore((s) => s.anchors.length === 0 && s.tasks.length === 0);
 
   const navButton =
     'rounded-lg border border-line bg-card px-3 py-1.5 text-sm text-ink hover:bg-brand-soft';
@@ -55,23 +59,26 @@ export default function App() {
           </header>
 
           {view === 'today' ? (
-            <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
-              <div className="min-w-0 space-y-8">
-                <Greeting />
-                <Card>
-                  <DaySummary />
-                  <Timeline />
-                </Card>
+            <PlannerDnd>
+              <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
+                <div className="min-w-0 space-y-8">
+                  {isEmpty && <EmptyStart onAddAnchor={() => setView('anchors')} />}
+                  <Greeting />
+                  <Card>
+                    <DaySummary />
+                    <Timeline />
+                  </Card>
+                </div>
+                <div className="space-y-8">
+                  <Card>
+                    <MonthCalendar />
+                  </Card>
+                  <Card>
+                    <TaskInbox />
+                  </Card>
+                </div>
               </div>
-              <div className="space-y-8">
-                <Card>
-                  <MonthCalendar />
-                </Card>
-                <Card>
-                  <TaskInbox />
-                </Card>
-              </div>
-            </div>
+            </PlannerDnd>
           ) : (
             <div className="grid max-w-4xl gap-8 md:grid-cols-2">
               <Card>
@@ -79,6 +86,7 @@ export default function App() {
               </Card>
               <Card>
                 <AnchorList />
+                <DataControls />
               </Card>
             </div>
           )}

@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Anchor, Settings, Task } from '../types';
-import { checkFit, placedOn } from '../lib/fit';
+import { fitFrom, placedOn } from '../lib/fit';
 import { computeGaps } from '../lib/gaps';
 import { toMinutes, todayString } from '../lib/time';
 
-const SAMPLE_ANCHORS: Anchor[] = [
+const sampleAnchors = (): Anchor[] => [
   {
     id: 'sample-work',
     title: 'Work',
@@ -56,10 +56,15 @@ type PlannerState = {
   addTask: (title: string, durationMin: number) => void;
   removeTask: (id: string) => void;
   /**
-   * Put an inbox task into the gap that starts at `gapStartMin`, at the earliest
-   * time that fits. Returns false (and changes nothing) if it does not fit.
+   * Put an inbox task into the gap that contains `fromMin`, at the earliest time
+   * at or after `fromMin` that fits. Pass a gap's start to use the whole gap.
+   * Returns false (and changes nothing) if it does not fit.
    */
-  planTask: (id: string, date: string, gapStartMin: number) => boolean;
+  planTask: (id: string, date: string, fromMin: number) => boolean;
+  /** Replace the anchors with a typical weekday so a new visitor can see the idea. */
+  loadSample: () => void;
+  /** Remove every anchor and task. */
+  clearAll: () => void;
   /** Send a planned or done task back to the inbox. */
   unplanTask: (id: string) => void;
   /** Tick a planned task as done, or untick it. */
@@ -71,7 +76,7 @@ type PlannerState = {
 export const usePlannerStore = create<PlannerState>()(
   persist(
     (set, get) => ({
-      anchors: SAMPLE_ANCHORS,
+      anchors: [],
       tasks: [],
       settings: DEFAULT_SETTINGS,
       selectedDate: todayString(),
@@ -91,17 +96,19 @@ export const usePlannerStore = create<PlannerState>()(
         })),
       removeTask: (id) => set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) })),
 
-      planTask: (id, date, gapStartMin) => {
+      planTask: (id, date, fromMin) => {
         const { tasks, anchors, settings } = get();
         const task = tasks.find((t) => t.id === id);
         if (!task) return false;
 
-        const gap = computeGaps(anchors, date, settings).find((g) => g.startMin === gapStartMin);
-        if (!gap) return false;
-
         // The task's own old slot (if any) must not block its new one.
-        const result = checkFit(task.durationMin, gap, placedOn(tasks, date, id));
-        if (!result.fits) return false;
+        const result = fitFrom(
+          task.durationMin,
+          computeGaps(anchors, date, settings),
+          fromMin,
+          placedOn(tasks, date, id),
+        );
+        if (!result || !result.fits) return false;
 
         set({
           tasks: tasks.map((t) =>
@@ -110,6 +117,8 @@ export const usePlannerStore = create<PlannerState>()(
         });
         return true;
       },
+      loadSample: () => set({ anchors: sampleAnchors() }),
+      clearAll: () => set({ anchors: [], tasks: [] }),
       unplanTask: (id) =>
         set((s) => ({
           tasks: s.tasks.map((t) =>

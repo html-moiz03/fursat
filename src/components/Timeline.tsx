@@ -1,13 +1,47 @@
+import { useDroppable } from '@dnd-kit/core';
 import { useMemo } from 'react';
 import { freeZonesFor } from '../lib/day';
-import { hasConflict } from '../lib/fit';
+import { checkFit, hasConflict, type Range } from '../lib/fit';
 import { anchorsForDate } from '../lib/gaps';
 import { formatDuration, fromMinutes, todayString } from '../lib/time';
 import { useNowMinutes } from '../lib/useNow';
 import { usePlannerStore } from '../store/usePlannerStore';
+import { useActiveTask } from './PlannerDnd';
 import { TaskBlock } from './TaskBlock';
 
 const PX_PER_MIN = 1;
+
+/** A stretch of free time. While a task is dragged it shows whether the task fits and accepts the drop. */
+function FreeZone({ zone, top, height }: { zone: Range; top: number; height: number }) {
+  const active = useActiveTask();
+  const { setNodeRef, isOver } = useDroppable({ id: `zone-${zone.startMin}`, data: { zone } });
+
+  const size = zone.endMin - zone.startMin;
+  const verdict = active ? checkFit(active.durationMin, zone, []) : null;
+  const fits = verdict?.fits === true;
+
+  let style = 'border-dashed border-brand/30 bg-brand-soft/70 text-brand';
+  let label = `${formatDuration(size)} free (${fromMinutes(zone.startMin)}–${fromMinutes(zone.endMin)})`;
+  if (active && fits) {
+    style = isOver ? 'border-solid border-brand bg-brand/25 text-brand ring-2 ring-brand' : 'border-solid border-brand/70 bg-brand-soft text-brand';
+    label = isOver
+      ? `Drop to place ${fromMinutes(zone.startMin)}–${fromMinutes(zone.startMin + active.durationMin)}`
+      : `Fits · ${formatDuration(size)} free`;
+  } else if (active && verdict && !verdict.fits) {
+    style = 'border-dashed border-line bg-page text-muted opacity-70';
+    label = `Too short · ${formatDuration(size)} free`;
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`absolute left-2 right-2 flex items-center justify-center overflow-hidden rounded-lg border text-sm font-medium transition-colors ${style}`}
+      style={{ top, height }}
+    >
+      {label}
+    </div>
+  );
+}
 
 export function Timeline() {
   const anchors = usePlannerStore((s) => s.anchors);
@@ -67,13 +101,12 @@ export function Timeline() {
         ))}
 
         {freeZones.map((z) => (
-          <div
+          <FreeZone
             key={`free-${z.startMin}`}
-            className="absolute left-2 right-2 flex items-center justify-center overflow-hidden rounded-lg border border-dashed border-brand/30 bg-brand-soft/70 text-sm font-medium text-brand"
-            style={{ top: top(z.startMin), height: (z.endMin - z.startMin) * PX_PER_MIN }}
-          >
-            {formatDuration(z.endMin - z.startMin)} free ({fromMinutes(z.startMin)}–{fromMinutes(z.endMin)})
-          </div>
+            zone={z}
+            top={top(z.startMin)}
+            height={(z.endMin - z.startMin) * PX_PER_MIN}
+          />
         ))}
 
         {blocks.map((b, i) => (
