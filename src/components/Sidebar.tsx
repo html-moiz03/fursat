@@ -1,4 +1,5 @@
 import { usePlannerStore } from '../store/usePlannerStore';
+import { InstallButton } from './InstallButton';
 
 export type View = 'today' | 'anchors';
 
@@ -71,9 +72,12 @@ export function Sidebar({ view, onChange }: { view: View; onChange: (v: View) =>
             </button>
           ))}
         </nav>
-        <p className="mt-auto text-xs leading-relaxed text-muted">
-          Fix what can't move. Fursat shows the time that's left.
-        </p>
+        <div className="mt-auto space-y-4">
+          <InstallButton />
+          <p className="text-xs leading-relaxed text-muted">
+            Fix what can't move. Fursat shows the time that's left.
+          </p>
+        </div>
       </aside>
 
       <nav

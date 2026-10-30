@@ -7,8 +7,10 @@ import { DaySummary } from './components/DaySummary';
 import { EmptyStart } from './components/EmptyStart';
 import { Greeting } from './components/Greeting';
 import { MonthCalendar } from './components/MonthCalendar';
+import { InstallButton } from './components/InstallButton';
 import { PlannerDnd } from './components/PlannerDnd';
 import { PrayerCard } from './components/PrayerCard';
+import { PwaStatus } from './components/PwaStatus';
 import { Sidebar, type View } from './components/Sidebar';
 import { TaskInbox } from './components/TaskInbox';
 import { Timeline } from './components/Timeline';
@@ -42,8 +44,9 @@ export default function App() {
       <main className="min-w-0 flex-1 px-5 pb-28 pt-8 md:px-10 md:pb-16">
         <div className="mx-auto max-w-6xl">
           <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 md:hidden">
+            <div className="flex w-full flex-wrap items-center gap-x-3 gap-y-2 md:hidden">
               <span className="text-lg font-semibold tracking-tight">Fursat</span>
+              <InstallButton />
             </div>
             <h1 className="text-2xl font-semibold tracking-tight">
               {view === 'today' ? prettyDate(selectedDate) : 'Anchors'}
@@ -100,6 +103,7 @@ export default function App() {
           )}
         </div>
       </main>
+      <PwaStatus />
     </div>
   );
 }
