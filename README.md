@@ -19,6 +19,8 @@ npm run build    # type-check + production build
 - Sidebar layout with a greeting card (free time today and what's up next) and a month calendar to jump between days
 - Task inbox: add a task with a length and drag it into a free gap. While you drag, gaps that fit light up and gaps that are too short say so. A dropdown does the same without a mouse
 - Placed tasks appear on the timeline; tick them off, or send them back to the inbox
+- Drag a placed task by its grip (⠿) to another gap, or within its own gap. A drop that does not fit is ignored and the task stays put
+- Edit an anchor from the Anchors page (name, times, repeat days). Tasks it now overlaps are flagged as conflicts rather than silently moved
 - Fragmentation is respected: two 60-minute holes do not fit a 90-minute task
 - A task that ends up overlapping an anchor you added later is flagged as a conflict
 - Proportional timeline with a live "now" line that updates every minute
@@ -48,6 +50,7 @@ src/
   lib/fit.ts                freeRanges(), checkFit(), fitFrom(), placedOn(), hasConflict()
   lib/fit.test.ts           35 tests for the task-fitting rules
   store/usePlannerStore.ts  Zustand store, persisted under "fursat:v1"
+  store/usePlannerStore.test.ts  7 tests for editing anchors and moving placed tasks
   components/               Sidebar, Greeting, EmptyStart, PlannerDnd (drag and drop), MonthCalendar, Timeline, TaskInbox, TaskBlock, DaySummary, AnchorForm, AnchorList, DataControls, PrayerCard, DayHoursCard, WindowNotice, InstallButton, PwaStatus, Card
 ```
 
@@ -55,5 +58,5 @@ Times are stored as minutes since midnight and dates as `YYYY-MM-DD` strings, so
 
 ## Next steps
 
-1. Drag a placed task to a new gap, resize it, edit anchors
+1. Resize a placed task, keyboard-only moving, edit prayer settings per prayer
 2. Weekly view, carry-over of unfinished tasks, then optional Supabase sync

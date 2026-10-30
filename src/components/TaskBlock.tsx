@@ -1,3 +1,4 @@
+import { useDraggable } from '@dnd-kit/core';
 import type { Task } from '../types';
 import { fromMinutes } from '../lib/time';
 import { usePlannerStore } from '../store/usePlannerStore';
@@ -14,6 +15,7 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
   const toggleDone = usePlannerStore((s) => s.toggleDone);
   const unplanTask = usePlannerStore((s) => s.unplanTask);
 
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id });
   const done = task.status === 'done';
   const start = task.startMin ?? 0;
   const range = `${fromMinutes(start)}–${fromMinutes(start + task.durationMin)}`;
@@ -24,10 +26,22 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
 
   return (
     <div
-      className={`absolute left-4 right-4 z-[5] flex items-center gap-2 overflow-hidden rounded-md border px-2 text-xs leading-none ${colors}`}
+      ref={setNodeRef}
+      className={`absolute left-4 right-4 z-[5] flex items-center gap-2 overflow-hidden rounded-md border px-2 text-xs leading-none ${colors} ${
+        isDragging ? 'opacity-40' : ''
+      }`}
       style={{ top, height }}
       title={`${task.title}, ${range}${conflict ? ' (overlaps something else)' : ''}`}
     >
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        aria-label={`Drag ${task.title} to another gap`}
+        className="-ml-1 shrink-0 cursor-grab touch-none px-0.5 opacity-60 hover:opacity-100"
+      >
+        ⠿
+      </button>
       <input
         type="checkbox"
         checked={done}

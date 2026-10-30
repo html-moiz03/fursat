@@ -73,9 +73,17 @@ export function Timeline() {
     () => tasks.filter((t) => t.status !== 'inbox' && t.date === date && t.startMin !== undefined),
     [tasks, date],
   );
+  // While a placed task is being moved its own slot counts as free, so it can shift within its gap.
+  const movingId = useActiveTask()?.id;
   const freeZones = useMemo(
-    () => freeZonesFor(anchors, tasks, date, { dayStartMin, dayEndMin, minGapMin }),
-    [anchors, tasks, date, dayStartMin, dayEndMin, minGapMin],
+    () =>
+      freeZonesFor(
+        anchors,
+        movingId ? tasks.filter((t) => t.id !== movingId) : tasks,
+        date,
+        { dayStartMin, dayEndMin, minGapMin },
+      ),
+    [anchors, tasks, movingId, date, dayStartMin, dayEndMin, minGapMin],
   );
 
   const hours: number[] = [];

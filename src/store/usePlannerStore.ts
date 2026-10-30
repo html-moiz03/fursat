@@ -62,6 +62,8 @@ type PlannerState = {
 
   addAnchor: (anchor: Omit<Anchor, 'id' | 'source'>) => void;
   removeAnchor: (id: string) => void;
+  /** Change a manual anchor. Tasks placed over its new time are flagged as conflicts, not moved. */
+  updateAnchor: (id: string, patch: Partial<Omit<Anchor, 'id' | 'source'>>) => void;
   addTask: (title: string, durationMin: number) => void;
   removeTask: (id: string) => void;
   /**
@@ -102,6 +104,10 @@ export const usePlannerStore = create<PlannerState>()(
           anchors: [...s.anchors, { ...anchor, id: crypto.randomUUID(), source: 'manual' }],
         })),
       removeAnchor: (id) => set((s) => ({ anchors: s.anchors.filter((a) => a.id !== id) })),
+      updateAnchor: (id, patch) =>
+        set((s) => ({
+          anchors: s.anchors.map((a) => (a.id === id && a.source === 'manual' ? { ...a, ...patch } : a)),
+        })),
 
       addTask: (title, durationMin) =>
         set((s) => ({
@@ -128,7 +134,10 @@ export const usePlannerStore = create<PlannerState>()(
 
         set({
           tasks: tasks.map((t) =>
-            t.id === id ? { ...t, status: 'planned', date, startMin: result.startMin } : t,
+            // A done task keeps its ticked state when it is moved.
+            t.id === id
+              ? { ...t, status: t.status === 'done' ? 'done' : 'planned', date, startMin: result.startMin }
+              : t,
           ),
         });
         return true;
