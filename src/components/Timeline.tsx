@@ -35,7 +35,9 @@ function FreeZone({ zone, top, height }: { zone: Range; top: number; height: num
   return (
     <div
       ref={setNodeRef}
-      className={`absolute left-2 right-2 flex items-center justify-center overflow-hidden rounded-lg border text-sm font-medium transition-colors ${style}`}
+      className={`absolute left-2 right-2 flex items-center justify-center overflow-hidden rounded-lg border font-medium leading-none transition-colors ${
+        height < 28 ? 'text-xs' : 'text-sm'
+      } ${style}`}
       style={{ top, height }}
     >
       {label}
@@ -112,7 +114,9 @@ export function Timeline() {
         {blocks.map((b, i) => (
           <div
             key={`${b.anchor.id}-${i}`}
-            className="absolute left-2 right-2 overflow-hidden rounded-md px-2 py-1 text-sm text-white shadow-sm"
+            className={`absolute left-2 right-2 overflow-hidden rounded-md px-2 text-white ${
+              b.endMin - b.startMin < 40 ? 'flex items-center gap-1.5 text-xs leading-none' : 'py-1 text-sm'
+            }`}
             style={{
               top: top(b.startMin),
               height: (b.endMin - b.startMin) * PX_PER_MIN,

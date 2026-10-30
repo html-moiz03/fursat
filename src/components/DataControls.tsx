@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { usePlannerStore } from '../store/usePlannerStore';
 
 export function DataControls() {
-  const hasAnchors = usePlannerStore((s) => s.anchors.length > 0);
+  const hasAnchors = usePlannerStore((s) => s.anchors.some((a) => a.source === 'manual'));
   const hasTasks = usePlannerStore((s) => s.tasks.length > 0);
+  const hasPrayer = usePlannerStore((s) => !!s.settings.prayer?.enabled);
   const loadSample = usePlannerStore((s) => s.loadSample);
   const clearAll = usePlannerStore((s) => s.clearAll);
   const [confirming, setConfirming] = useState(false);
@@ -38,7 +39,7 @@ export function DataControls() {
               Load a sample day
             </button>
           )}
-          {(hasAnchors || hasTasks) && (
+          {(hasAnchors || hasTasks || hasPrayer) && (
             <button type="button" className={`${button} text-muted hover:text-red-600`} onClick={() => setConfirming(true)}>
               Clear all data
             </button>

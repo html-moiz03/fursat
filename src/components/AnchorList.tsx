@@ -4,7 +4,8 @@ import { usePlannerStore } from '../store/usePlannerStore';
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 export function AnchorList() {
-  const anchors = usePlannerStore((s) => s.anchors);
+  const all = usePlannerStore((s) => s.anchors);
+  const anchors = all.filter((a) => a.source === 'manual');
   const removeAnchor = usePlannerStore((s) => s.removeAnchor);
 
   return (

@@ -8,10 +8,12 @@ import { EmptyStart } from './components/EmptyStart';
 import { Greeting } from './components/Greeting';
 import { MonthCalendar } from './components/MonthCalendar';
 import { PlannerDnd } from './components/PlannerDnd';
+import { PrayerCard } from './components/PrayerCard';
 import { Sidebar, type View } from './components/Sidebar';
 import { TaskInbox } from './components/TaskInbox';
 import { Timeline } from './components/Timeline';
 import { addDays, todayString } from './lib/time';
+import { usePrayerSync } from './lib/usePrayerSync';
 import { usePlannerStore } from './store/usePlannerStore';
 
 function prettyDate(date: string): string {
@@ -24,6 +26,7 @@ function prettyDate(date: string): string {
 }
 
 export default function App() {
+  usePrayerSync();
   const [view, setView] = useState<View>('today');
   const selectedDate = usePlannerStore((s) => s.selectedDate);
   const setSelectedDate = usePlannerStore((s) => s.setSelectedDate);
@@ -80,10 +83,15 @@ export default function App() {
               </div>
             </PlannerDnd>
           ) : (
-            <div className="grid max-w-4xl gap-8 md:grid-cols-2">
-              <Card>
-                <AnchorForm />
-              </Card>
+            <div className="grid max-w-4xl items-start gap-8 md:grid-cols-2">
+              <div className="space-y-8">
+                <Card>
+                  <AnchorForm />
+                </Card>
+                <Card>
+                  <PrayerCard />
+                </Card>
+              </div>
               <Card>
                 <AnchorList />
                 <DataControls />

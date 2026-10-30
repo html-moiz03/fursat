@@ -45,7 +45,7 @@ const ITEMS: { view: View; label: string; Icon: () => React.JSX.Element }[] = [
 
 export function Sidebar({ view, onChange }: { view: View; onChange: (v: View) => void }) {
   const inboxCount = usePlannerStore((s) => s.tasks.filter((t) => t.status === 'inbox').length);
-  const anchorCount = usePlannerStore((s) => s.anchors.length);
+  const anchorCount = usePlannerStore((s) => s.anchors.filter((a) => a.source === 'manual').length);
   const counts: Record<View, number> = { today: inboxCount, anchors: anchorCount };
 
   return (

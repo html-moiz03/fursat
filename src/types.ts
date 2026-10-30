@@ -38,6 +38,18 @@ export type Gap = {
 /** A busy stretch of one day, in minutes since midnight. */
 export type Interval = [startMin: number, endMin: number];
 
+export type PrayerSettings = {
+  enabled: boolean;
+  city: string;
+  country: string;
+  /** Aladhan calculation method id, e.g. 1 = University of Islamic Sciences, Karachi. */
+  method: number;
+  /** Asr calculation: 0 = Shafi/Maliki/Hanbali, 1 = Hanafi. */
+  school: 0 | 1;
+  /** How long each prayer blocks off, in minutes. */
+  durationMin: number;
+};
+
 export type Settings = {
   /** e.g. 360 = 06:00 */
   dayStartMin: number;
@@ -45,8 +57,8 @@ export type Settings = {
   dayEndMin: number;
   /** Gaps shorter than this are hidden, e.g. 10. */
   minGapMin: number;
-  city?: string;
-  prayerMethod?: number;
+  /** Prayer-time anchors from the Aladhan API. Absent until the user sets it up. */
+  prayer?: PrayerSettings;
   theme: 'light' | 'dark' | 'system';
 };
 

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Anchor, Settings, Task } from '../types';
+import type { Anchor, PrayerSettings, Settings, Task } from '../types';
 import { fitFrom, placedOn } from '../lib/fit';
 import { computeGaps } from '../lib/gaps';
 import { toMinutes, todayString } from '../lib/time';
@@ -38,6 +38,15 @@ const sampleAnchors = (): Anchor[] => [
   },
 ];
 
+export const DEFAULT_PRAYER: PrayerSettings = {
+  enabled: false,
+  city: '',
+  country: '',
+  method: 1, // University of Islamic Sciences, Karachi
+  school: 1, // Hanafi Asr
+  durationMin: 20,
+};
+
 const DEFAULT_SETTINGS: Settings = {
   dayStartMin: toMinutes('06:00'),
   dayEndMin: toMinutes('23:00'),
@@ -63,8 +72,15 @@ type PlannerState = {
   planTask: (id: string, date: string, fromMin: number) => boolean;
   /** Replace the anchors with a typical weekday so a new visitor can see the idea. */
   loadSample: () => void;
-  /** Remove every anchor and task. */
+  /** Remove every anchor and task, and switch prayer times off. */
   clearAll: () => void;
+  /**
+   * Change the prayer-time setup. Any change that affects the times drops the
+   * prayer anchors so they are fetched again.
+   */
+  setPrayerSettings: (patch: Partial<PrayerSettings>) => void;
+  /** Replace the prayer anchors of one month ('YYYY-MM') with freshly fetched ones. */
+  addPrayerAnchors: (month: string, anchors: Anchor[]) => void;
   /** Send a planned or done task back to the inbox. */
   unplanTask: (id: string) => void;
   /** Tick a planned task as done, or untick it. */
@@ -117,8 +133,27 @@ export const usePlannerStore = create<PlannerState>()(
         });
         return true;
       },
-      loadSample: () => set({ anchors: sampleAnchors() }),
-      clearAll: () => set({ anchors: [], tasks: [] }),
+      loadSample: () =>
+        set((s) => ({ anchors: [...s.anchors.filter((a) => a.source === 'prayer-api'), ...sampleAnchors()] })),
+      clearAll: () =>
+        set((s) => ({ anchors: [], tasks: [], settings: { ...s.settings, prayer: undefined } })),
+      setPrayerSettings: (patch) =>
+        set((s) => {
+          const current = s.settings.prayer ?? DEFAULT_PRAYER;
+          const next = { ...current, ...patch };
+          const changed = (Object.keys(next) as (keyof PrayerSettings)[]).some((k) => current[k] !== next[k]);
+          return {
+            settings: { ...s.settings, prayer: next },
+            anchors: changed ? s.anchors.filter((a) => a.source !== 'prayer-api') : s.anchors,
+          };
+        }),
+      addPrayerAnchors: (month, fetched) =>
+        set((s) => ({
+          anchors: [
+            ...s.anchors.filter((a) => !(a.source === 'prayer-api' && a.date?.startsWith(month))),
+            ...fetched,
+          ],
+        })),
       unplanTask: (id) =>
         set((s) => ({
           tasks: s.tasks.map((t) =>
