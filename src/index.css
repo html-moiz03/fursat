@@ -1,10 +1,52 @@
 @import "tailwindcss";
 
+/* Fursat palette. Light values here, dark values in the media query below. */
 :root {
   color-scheme: light dark;
+  --page: #edf4ef;
+  --card: #ffffff;
+  --ink: #16372d;
+  --muted: #5a766b;
+  --line: #dce9e2;
+  --brand: #1b7f67;
+  --brand-soft: #d8efe5;
+  --on-brand: #ffffff;
+  --hero-from: #d4f0e4;
+  --hero-to: #b7e3d0;
+  --hero-wave-1: #9fd7bf;
+  --hero-wave-2: #7bc4a6;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page: #0d1815;
+    --card: #15251f;
+    --ink: #e3f1ea;
+    --muted: #8fb1a3;
+    --line: #223a31;
+    --brand: #4cc4a0;
+    --brand-soft: #1b3a30;
+    --on-brand: #06251c;
+    --hero-from: #1b3d31;
+    --hero-to: #12281f;
+    --hero-wave-1: #1f4a3b;
+    --hero-wave-2: #265a47;
+  }
+}
+
+@theme inline {
+  --color-page: var(--page);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-on-brand: var(--on-brand);
 }
 
 body {
   margin: 0;
+  background: var(--page);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }

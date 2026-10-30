@@ -9,7 +9,7 @@ const MIN_DURATION = 5;
 const MAX_DURATION = 600;
 
 const field =
-  'rounded-md border border-stone-300 bg-white px-2 py-1.5 text-sm dark:border-stone-700 dark:bg-stone-900';
+  'rounded-lg border border-line bg-page px-2 py-1.5 text-sm text-ink';
 
 export function TaskInbox() {
   const tasks = usePlannerStore((s) => s.tasks);
@@ -52,7 +52,7 @@ export function TaskInbox() {
         <h2 className="text-base font-semibold">Add a task</h2>
 
         <label className="block text-sm">
-          <span className="mb-1 block text-stone-600 dark:text-stone-400">What needs doing</span>
+          <span className="mb-1 block text-muted">What needs doing</span>
           <input
             className={`${field} w-full`}
             value={title}
@@ -63,7 +63,7 @@ export function TaskInbox() {
 
         <div>
           <label className="block text-sm">
-            <span className="mb-1 block text-stone-600 dark:text-stone-400">How long (minutes)</span>
+            <span className="mb-1 block text-muted">How long (minutes)</span>
             <input
               type="number"
               inputMode="numeric"
@@ -83,8 +83,8 @@ export function TaskInbox() {
                 onClick={() => setMinutes(String(p))}
                 className={`rounded-md border px-2 py-0.5 text-xs ${
                   duration === p
-                    ? 'border-emerald-700 bg-emerald-700 text-white'
-                    : 'border-stone-300 dark:border-stone-700'
+                    ? 'border-brand bg-brand text-on-brand'
+                    : 'border-line'
                 }`}
               >
                 {formatDuration(p)}
@@ -101,7 +101,7 @@ export function TaskInbox() {
         <button
           type="submit"
           disabled={!title.trim() || !durationValid}
-          className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-40"
+          className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-on-brand disabled:opacity-40"
         >
           Add to inbox
         </button>
@@ -110,7 +110,7 @@ export function TaskInbox() {
       <div>
         <h2 className="mb-2 text-base font-semibold">Inbox ({inbox.length})</h2>
         {inbox.length === 0 ? (
-          <p className="text-sm text-stone-500">Nothing waiting. Add a task and place it in a free gap.</p>
+          <p className="text-sm text-muted">Nothing waiting. Add a task and place it in a free gap.</p>
         ) : (
           <ul className="space-y-2">
             {inbox.map((t) => {
@@ -126,24 +126,24 @@ export function TaskInbox() {
               return (
                 <li
                   key={t.id}
-                  className="space-y-1.5 rounded-md border border-stone-200 px-2.5 py-2 text-sm dark:border-stone-800"
+                  className="space-y-1.5 rounded-xl border border-line px-3 py-2 text-sm"
                 >
                   <div className="flex items-center gap-2">
                     <span className="flex-1">
                       <span className="font-medium">{t.title}</span>{' '}
-                      <span className="text-stone-500">{formatDuration(t.durationMin)}</span>
+                      <span className="text-muted">{formatDuration(t.durationMin)}</span>
                     </span>
                     <button
                       type="button"
                       onClick={() => removeTask(t.id)}
-                      className="text-xs text-stone-500 hover:text-red-600"
+                      className="text-xs text-muted hover:text-red-600"
                       aria-label={`Delete ${t.title}`}
                     >
                       Delete
                     </button>
                   </div>
 
-                  <p className={`text-xs ${fitCount > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'}`}>
+                  <p className={`text-xs ${fitCount > 0 ? 'text-brand' : 'text-amber-700 dark:text-amber-400'}`}>
                     {note}
                   </p>
 

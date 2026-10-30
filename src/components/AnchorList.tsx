@@ -11,18 +11,18 @@ export function AnchorList() {
     <section>
       <h2 className="mb-2 text-base font-semibold">Your anchors</h2>
       {anchors.length === 0 ? (
-        <p className="text-sm text-stone-500">No anchors yet, so the whole day is free.</p>
+        <p className="text-sm text-muted">No anchors yet, so the whole day is free.</p>
       ) : (
         <ul className="space-y-1.5">
           {anchors.map((a) => (
             <li
               key={a.id}
-              className="flex items-center gap-2 rounded-md border border-stone-200 px-2.5 py-1.5 text-sm dark:border-stone-800"
+              className="flex items-center gap-2 rounded-md border border-line px-2.5 py-1.5 text-sm"
             >
               <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: a.color }} />
               <span className="flex-1">
                 <span className="font-medium">{a.title}</span>{' '}
-                <span className="text-stone-500">
+                <span className="text-muted">
                   {fromMinutes(a.startMin)}–{fromMinutes(a.endMin)} ·{' '}
                   {a.repeatDays.length === 7
                     ? 'daily'
@@ -34,7 +34,7 @@ export function AnchorList() {
               <button
                 type="button"
                 onClick={() => removeAnchor(a.id)}
-                className="text-xs text-stone-500 hover:text-red-600"
+                className="text-xs text-muted hover:text-red-600"
                 aria-label={`Delete ${a.title}`}
               >
                 Delete

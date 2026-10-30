@@ -16,6 +16,7 @@ npm run build    # type-check + production build
 - Anchors with a start, end and repeat days; one-off anchors for a single date
 - Anchors that cross midnight (e.g. 22:00 to 02:00) split correctly across two days
 - Free gaps computed automatically, overlaps merged, tiny gaps hidden
+- Sidebar layout with a greeting card (free time today and what's up next) and a month calendar to jump between days
 - Task inbox: add a task with a length, see which gaps it fits in, and place it from a dropdown (gaps that are too short are disabled and show by how much)
 - Placed tasks appear on the timeline; tick them off, or send them back to the inbox
 - Fragmentation is respected: two 60-minute holes do not fit a 90-minute task
@@ -32,10 +33,12 @@ src/
   lib/time.ts               minutes <-> HH:MM, durations, local-date helpers
   lib/gaps.ts               anchorsForDate() and computeGaps()
   lib/gaps.test.ts          20 tests, one per edge case
+  lib/day.ts                freeZonesFor() and upNext(), shared by the greeting and timeline
+  lib/calendar.ts           monthGrid() and shiftMonth() for the calendar
   lib/fit.ts                freeRanges(), checkFit(), placedOn(), hasConflict()
   lib/fit.test.ts           30 tests for the task-fitting rules
   store/usePlannerStore.ts  Zustand store, persisted under "fursat:v1"
-  components/               Timeline, TaskInbox, TaskBlock, DaySummary, AnchorForm, AnchorList
+  components/               Sidebar, Greeting, MonthCalendar, Timeline, TaskInbox, TaskBlock, DaySummary, AnchorForm, AnchorList, Card
 ```
 
 Times are stored as minutes since midnight and dates as `YYYY-MM-DD` strings, so the gap maths is plain integer work with no timezone bugs.

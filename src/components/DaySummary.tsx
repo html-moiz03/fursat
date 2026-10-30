@@ -14,7 +14,7 @@ export function DaySummary() {
   const doneMin = done.reduce((sum, t) => sum + t.durationMin, 0);
 
   return (
-    <p className="mb-1 text-sm text-stone-600 dark:text-stone-400">
+    <p className="mb-3 text-sm text-muted">
       Planned {formatDuration(plannedMin)} across {todays.length} {todays.length === 1 ? 'task' : 'tasks'}
       {' · '}
       {done.length} done ({formatDuration(doneMin)})

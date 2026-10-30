@@ -1,21 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
-import { freeRanges, hasConflict, placedOn } from '../lib/fit';
-import { anchorsForDate, computeGaps } from '../lib/gaps';
-import { formatDuration, fromMinutes, nowMinutes, todayString } from '../lib/time';
+import { useMemo } from 'react';
+import { freeZonesFor } from '../lib/day';
+import { hasConflict } from '../lib/fit';
+import { anchorsForDate } from '../lib/gaps';
+import { formatDuration, fromMinutes, todayString } from '../lib/time';
+import { useNowMinutes } from '../lib/useNow';
 import { usePlannerStore } from '../store/usePlannerStore';
 import { TaskBlock } from './TaskBlock';
 
 const PX_PER_MIN = 1;
-
-/** Re-renders once a minute so the "now" line moves. */
-function useNowMinutes(): number {
-  const [now, setNow] = useState(nowMinutes());
-  useEffect(() => {
-    const id = setInterval(() => setNow(nowMinutes()), 60_000);
-    return () => clearInterval(id);
-  }, []);
-  return now;
-}
 
 export function Timeline() {
   const anchors = usePlannerStore((s) => s.anchors);
@@ -25,11 +17,6 @@ export function Timeline() {
   const now = useNowMinutes();
 
   const { dayStartMin, dayEndMin, minGapMin } = settings;
-
-  const gaps = useMemo(
-    () => computeGaps(anchors, date, { dayStartMin, dayEndMin, minGapMin }),
-    [anchors, date, dayStartMin, dayEndMin, minGapMin],
-  );
 
   const blocks = useMemo(
     () =>
@@ -50,39 +37,30 @@ export function Timeline() {
     () => tasks.filter((t) => t.status !== 'inbox' && t.date === date && t.startMin !== undefined),
     [tasks, date],
   );
-  const freeZones = useMemo(() => {
-    const placed = placedOn(tasks, date);
-    return gaps
-      .flatMap((g) => freeRanges(g, placed))
-      .filter((z) => z.endMin - z.startMin >= minGapMin);
-  }, [gaps, tasks, date, minGapMin]);
+  const freeZones = useMemo(
+    () => freeZonesFor(anchors, tasks, date, { dayStartMin, dayEndMin, minGapMin }),
+    [anchors, tasks, date, dayStartMin, dayEndMin, minGapMin],
+  );
 
   const hours: number[] = [];
   for (let h = Math.ceil(dayStartMin / 60); h <= Math.floor(dayEndMin / 60); h++) hours.push(h);
 
   const top = (min: number) => (min - dayStartMin) * PX_PER_MIN;
   const showNow = date === todayString() && now >= dayStartMin && now <= dayEndMin;
-  const totalFree = freeZones.reduce((sum, z) => sum + (z.endMin - z.startMin), 0);
 
   return (
     <section aria-label="Timeline for the selected day">
-      <p className="mb-3 text-sm text-stone-600 dark:text-stone-400">
-        {freeZones.length === 0
-          ? 'No free time left in this day window.'
-          : `${formatDuration(totalFree)} free across ${freeZones.length} ${freeZones.length === 1 ? 'gap' : 'gaps'}.`}
-      </p>
-
       <div
-        className="relative ml-14 border-l border-stone-300 dark:border-stone-700"
+        className="relative ml-14 border-l border-line"
         style={{ height: (dayEndMin - dayStartMin) * PX_PER_MIN }}
       >
         {hours.map((h) => (
           <div
             key={h}
-            className="absolute left-0 right-0 border-t border-stone-200 dark:border-stone-800"
+            className="absolute left-0 right-0 border-t border-line"
             style={{ top: top(h * 60) }}
           >
-            <span className="absolute -left-14 -top-2.5 w-12 pr-2 text-right text-xs text-stone-500">
+            <span className="absolute -left-14 -top-2.5 w-12 pr-2 text-right text-xs text-muted">
               {fromMinutes(h * 60)}
             </span>
           </div>
@@ -91,7 +69,7 @@ export function Timeline() {
         {freeZones.map((z) => (
           <div
             key={`free-${z.startMin}`}
-            className="absolute left-2 right-2 flex items-center justify-center overflow-hidden rounded-md border border-dashed border-emerald-600/60 bg-emerald-500/10 text-sm font-medium text-emerald-800 dark:text-emerald-300"
+            className="absolute left-2 right-2 flex items-center justify-center overflow-hidden rounded-lg border border-dashed border-brand/50 bg-brand-soft text-sm font-medium text-brand"
             style={{ top: top(z.startMin), height: (z.endMin - z.startMin) * PX_PER_MIN }}
           >
             {formatDuration(z.endMin - z.startMin)} free ({fromMinutes(z.startMin)}–{fromMinutes(z.endMin)})

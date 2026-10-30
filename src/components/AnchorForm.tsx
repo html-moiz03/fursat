@@ -38,14 +38,14 @@ export function AnchorForm() {
   }
 
   const field =
-    'rounded-md border border-stone-300 bg-white px-2 py-1.5 text-sm dark:border-stone-700 dark:bg-stone-900';
+    'rounded-lg border border-line bg-page px-2 py-1.5 text-sm text-ink';
 
   return (
     <form onSubmit={onSubmit} className="space-y-3">
       <h2 className="text-base font-semibold">Add an anchor</h2>
 
       <label className="block text-sm">
-        <span className="mb-1 block text-stone-600 dark:text-stone-400">Name</span>
+        <span className="mb-1 block text-muted">Name</span>
         <input
           className={`${field} w-full`}
           value={title}
@@ -56,17 +56,17 @@ export function AnchorForm() {
 
       <div className="flex gap-3">
         <label className="block flex-1 text-sm">
-          <span className="mb-1 block text-stone-600 dark:text-stone-400">Starts</span>
+          <span className="mb-1 block text-muted">Starts</span>
           <input type="time" className={`${field} w-full`} value={start} onChange={(e) => setStart(e.target.value)} />
         </label>
         <label className="block flex-1 text-sm">
-          <span className="mb-1 block text-stone-600 dark:text-stone-400">Ends</span>
+          <span className="mb-1 block text-muted">Ends</span>
           <input type="time" className={`${field} w-full`} value={end} onChange={(e) => setEnd(e.target.value)} />
         </label>
       </div>
 
       <fieldset>
-        <legend className="mb-1 text-sm text-stone-600 dark:text-stone-400">
+        <legend className="mb-1 text-sm text-muted">
           Repeats on (leave empty for just {selectedDate})
         </legend>
         <div className="flex flex-wrap gap-1.5">
@@ -78,8 +78,8 @@ export function AnchorForm() {
               onClick={() => toggleDay(d)}
               className={`rounded-md border px-2.5 py-1 text-xs ${
                 days.includes(d)
-                  ? 'border-emerald-700 bg-emerald-700 text-white'
-                  : 'border-stone-300 dark:border-stone-700'
+                  ? 'border-brand bg-brand text-on-brand'
+                  : 'border-line'
               }`}
             >
               {label}
@@ -89,12 +89,12 @@ export function AnchorForm() {
       </fieldset>
 
       {sameTime && <p className="text-xs text-red-600">Start and end can't be the same time.</p>}
-      <p className="text-xs text-stone-500">If the end is earlier than the start, the anchor runs past midnight.</p>
+      <p className="text-xs text-muted">If the end is earlier than the start, the anchor runs past midnight.</p>
 
       <button
         type="submit"
         disabled={!title.trim() || sameTime}
-        className="rounded-md bg-emerald-700 px-3 py-1.5 text-sm font-medium text-white disabled:opacity-40"
+        className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-on-brand disabled:opacity-40"
       >
         Add anchor
       </button>
