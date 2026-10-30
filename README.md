@@ -23,6 +23,7 @@ npm run build    # type-check + production build
 - A task that ends up overlapping an anchor you added later is flagged as a conflict
 - Proportional timeline with a live "now" line that updates every minute
 - Prayer times: enter a city and Fajr, Dhuhr, Asr, Maghrib and Isha are fetched from the AlAdhan API and added as anchors, so prayer time is never counted as free. Months load as you open them and stay cached for offline use
+- Day hours: choose when your day starts and ends (Anchors page). If a prayer falls outside, such as an early Fajr, the Today view offers a one-click "Show it". Tasks outside the hours are clipped and flagged
 - Installable as an app (phone home screen or desktop) and works offline: the whole app is cached by a service worker, with a quiet "update ready" notice when a new version is deployed
 - A new visitor starts empty, with a one-click sample day; "Clear all data" is on the Anchors page
 - Everything is saved in the browser (localStorage). The only thing sent out is the city and country you enter for prayer times
@@ -42,10 +43,12 @@ src/
   lib/aladhan.test.ts       tests for both response shapes, errors and the fetch wrapper
   lib/usePrayerSync.ts      fetches the month on screen when prayer times are on
   store/useInstall.ts       keeps the browser's install prompt for the Install button
+  lib/dayWindow.ts          day-hour options, suggestWindow(), tasksOutside()
+  lib/dayWindow.test.ts     11 tests for the day-hours rules
   lib/fit.ts                freeRanges(), checkFit(), fitFrom(), placedOn(), hasConflict()
   lib/fit.test.ts           35 tests for the task-fitting rules
   store/usePlannerStore.ts  Zustand store, persisted under "fursat:v1"
-  components/               Sidebar, Greeting, EmptyStart, PlannerDnd (drag and drop), MonthCalendar, Timeline, TaskInbox, TaskBlock, DaySummary, AnchorForm, AnchorList, DataControls, PrayerCard, InstallButton, PwaStatus, Card
+  components/               Sidebar, Greeting, EmptyStart, PlannerDnd (drag and drop), MonthCalendar, Timeline, TaskInbox, TaskBlock, DaySummary, AnchorForm, AnchorList, DataControls, PrayerCard, DayHoursCard, WindowNotice, InstallButton, PwaStatus, Card
 ```
 
 Times are stored as minutes since midnight and dates as `YYYY-MM-DD` strings, so the gap maths is plain integer work with no timezone bugs.

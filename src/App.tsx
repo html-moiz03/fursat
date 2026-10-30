@@ -3,6 +3,7 @@ import { AnchorForm } from './components/AnchorForm';
 import { AnchorList } from './components/AnchorList';
 import { Card } from './components/Card';
 import { DataControls } from './components/DataControls';
+import { DayHoursCard } from './components/DayHoursCard';
 import { DaySummary } from './components/DaySummary';
 import { EmptyStart } from './components/EmptyStart';
 import { Greeting } from './components/Greeting';
@@ -14,6 +15,7 @@ import { PwaStatus } from './components/PwaStatus';
 import { Sidebar, type View } from './components/Sidebar';
 import { TaskInbox } from './components/TaskInbox';
 import { Timeline } from './components/Timeline';
+import { WindowNotice } from './components/WindowNotice';
 import { addDays, todayString } from './lib/time';
 import { usePrayerSync } from './lib/usePrayerSync';
 import { usePlannerStore } from './store/usePlannerStore';
@@ -71,6 +73,7 @@ export default function App() {
                   {isEmpty && <EmptyStart onAddAnchor={() => setView('anchors')} />}
                   <Greeting />
                   <Card>
+                    <WindowNotice />
                     <DaySummary />
                     <Timeline />
                   </Card>
@@ -95,10 +98,15 @@ export default function App() {
                   <PrayerCard />
                 </Card>
               </div>
-              <Card>
-                <AnchorList />
-                <DataControls />
-              </Card>
+              <div className="space-y-8">
+                <Card>
+                  <AnchorList />
+                  <DataControls />
+                </Card>
+                <Card>
+                  <DayHoursCard />
+                </Card>
+              </div>
             </div>
           )}
         </div>

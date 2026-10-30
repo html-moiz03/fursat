@@ -131,15 +131,21 @@ export function Timeline() {
           </div>
         ))}
 
-        {dayTasks.map((t) => (
-          <TaskBlock
-            key={t.id}
-            task={t}
-            top={top(t.startMin ?? 0)}
-            height={t.durationMin * PX_PER_MIN}
-            conflict={hasConflict(t, anchors, { dayStartMin, dayEndMin, minGapMin })}
-          />
-        ))}
+        {dayTasks.map((t) => {
+          // A task partly or wholly outside the day hours is clipped to them.
+          const from = Math.max(t.startMin ?? 0, dayStartMin);
+          const to = Math.min((t.startMin ?? 0) + t.durationMin, dayEndMin);
+          if (to <= from) return null;
+          return (
+            <TaskBlock
+              key={t.id}
+              task={t}
+              top={top(from)}
+              height={(to - from) * PX_PER_MIN}
+              conflict={hasConflict(t, anchors, { dayStartMin, dayEndMin, minGapMin })}
+            />
+          );
+        })}
 
         {showNow && (
           <div
