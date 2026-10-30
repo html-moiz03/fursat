@@ -1,37 +1,16 @@
 @import "tailwindcss";
 
-/* Fursat palette. Light values here, dark values in the media query below. */
+/* Fursat: one calm light theme. Warm off-white page, white cards, soft sage accent. */
 :root {
-  color-scheme: light dark;
-  --page: #edf4ef;
+  color-scheme: light;
+  --page: #f8f7f3;
   --card: #ffffff;
-  --ink: #16372d;
-  --muted: #5a766b;
-  --line: #dce9e2;
-  --brand: #1b7f67;
-  --brand-soft: #d8efe5;
+  --ink: #2c3a35;
+  --muted: #7a8983;
+  --line: #ece9e2;
+  --brand: #3f8a76;
+  --brand-soft: #e8f2ed;
   --on-brand: #ffffff;
-  --hero-from: #d4f0e4;
-  --hero-to: #b7e3d0;
-  --hero-wave-1: #9fd7bf;
-  --hero-wave-2: #7bc4a6;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --page: #0d1815;
-    --card: #15251f;
-    --ink: #e3f1ea;
-    --muted: #8fb1a3;
-    --line: #223a31;
-    --brand: #4cc4a0;
-    --brand-soft: #1b3a30;
-    --on-brand: #06251c;
-    --hero-from: #1b3d31;
-    --hero-to: #12281f;
-    --hero-wave-1: #1f4a3b;
-    --hero-wave-2: #265a47;
-  }
 }
 
 @theme inline {
@@ -48,5 +27,7 @@
 body {
   margin: 0;
   background: var(--page);
+  color: var(--ink);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.5;
 }

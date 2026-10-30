@@ -3,7 +3,7 @@ import { toMinutes } from '../lib/time';
 import { usePlannerStore } from '../store/usePlannerStore';
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const COLORS = ['#2f6f5e', '#8a5a2b', '#9b4d5a', '#3d5a80', '#6b4e9b', '#5c6b2f'];
+const COLORS = ['#4f7f70', '#8f6b47', '#a0606b', '#5a6f8f', '#7b6a95', '#6f7a48'];
 
 export function AnchorForm() {
   const addAnchor = usePlannerStore((s) => s.addAnchor);
@@ -41,7 +41,7 @@ export function AnchorForm() {
     'rounded-lg border border-line bg-page px-2 py-1.5 text-sm text-ink';
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3">
+    <form onSubmit={onSubmit} className="space-y-4">
       <h2 className="text-base font-semibold">Add an anchor</h2>
 
       <label className="block text-sm">

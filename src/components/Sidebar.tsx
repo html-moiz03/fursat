@@ -52,7 +52,7 @@ export function Sidebar({ view, onChange }: { view: View; onChange: (v: View) =>
     <>
       <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col gap-8 p-5 md:flex">
         <Brand />
-        <nav aria-label="Main" className="rounded-2xl bg-card p-2 shadow-sm ring-1 ring-line">
+        <nav aria-label="Main" className="rounded-2xl bg-card p-2 ring-1 ring-line">
           {ITEMS.map(({ view: v, label, Icon }) => (
             <button
               key={v}

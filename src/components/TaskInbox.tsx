@@ -143,7 +143,7 @@ export function TaskInbox() {
                     </button>
                   </div>
 
-                  <p className={`text-xs ${fitCount > 0 ? 'text-brand' : 'text-amber-700 dark:text-amber-400'}`}>
+                  <p className={`text-xs ${fitCount > 0 ? 'text-brand' : 'text-amber-700'}`}>
                     {note}
                   </p>
 

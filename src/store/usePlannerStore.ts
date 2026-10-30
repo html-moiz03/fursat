@@ -14,7 +14,7 @@ const SAMPLE_ANCHORS: Anchor[] = [
     repeatDays: [1, 2, 3, 4, 5],
     kind: 'work',
     source: 'manual',
-    color: '#2f6f5e',
+    color: '#4f7f70',
   },
   {
     id: 'sample-class',
@@ -24,7 +24,7 @@ const SAMPLE_ANCHORS: Anchor[] = [
     repeatDays: [1, 3],
     kind: 'class',
     source: 'manual',
-    color: '#8a5a2b',
+    color: '#8f6b47',
   },
   {
     id: 'sample-dinner',
@@ -34,7 +34,7 @@ const SAMPLE_ANCHORS: Anchor[] = [
     repeatDays: [0, 1, 2, 3, 4, 5, 6],
     kind: 'meal',
     source: 'manual',
-    color: '#9b4d5a',
+    color: '#a0606b',
   },
 ];
 

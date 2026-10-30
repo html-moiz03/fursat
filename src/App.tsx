@@ -32,13 +32,13 @@ export default function App() {
     <div className="min-h-screen bg-page text-ink md:flex">
       <Sidebar view={view} onChange={setView} />
 
-      <main className="min-w-0 flex-1 px-4 pb-24 pt-5 md:px-6 md:pb-10">
+      <main className="min-w-0 flex-1 px-5 pb-28 pt-8 md:px-10 md:pb-16">
         <div className="mx-auto max-w-6xl">
-          <header className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <header className="mb-8 flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-2 md:hidden">
               <span className="text-lg font-semibold tracking-tight">Fursat</span>
             </div>
-            <h1 className="text-xl font-semibold tracking-tight">
+            <h1 className="text-2xl font-semibold tracking-tight">
               {view === 'today' ? prettyDate(selectedDate) : 'Anchors'}
             </h1>
             <div className="flex items-center gap-2">
@@ -55,15 +55,15 @@ export default function App() {
           </header>
 
           {view === 'today' ? (
-            <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
-              <div className="min-w-0 space-y-5">
+            <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
+              <div className="min-w-0 space-y-8">
                 <Greeting />
                 <Card>
                   <DaySummary />
                   <Timeline />
                 </Card>
               </div>
-              <div className="space-y-5">
+              <div className="space-y-8">
                 <Card>
                   <MonthCalendar />
                 </Card>
@@ -73,7 +73,7 @@ export default function App() {
               </div>
             </div>
           ) : (
-            <div className="grid max-w-4xl gap-5 md:grid-cols-2">
+            <div className="grid max-w-4xl gap-8 md:grid-cols-2">
               <Card>
                 <AnchorForm />
               </Card>

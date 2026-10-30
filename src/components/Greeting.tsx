@@ -38,30 +38,16 @@ export function Greeting() {
       : `${formatDuration(totalFree)} free across ${zones.length} ${zones.length === 1 ? 'gap' : 'gaps'}.`;
 
   return (
-    <section
-      aria-label="Day overview"
-      className="relative overflow-hidden rounded-2xl p-5 shadow-sm ring-1 ring-line sm:p-6"
-      style={{ background: 'linear-gradient(135deg, var(--hero-from), var(--hero-to))' }}
-    >
-      <svg
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-24 w-full"
-        viewBox="0 0 400 100"
-        preserveAspectRatio="none"
-        aria-hidden="true"
-      >
-        <path d="M0 62 C60 38 120 82 200 60 S340 40 400 58 V100 H0Z" fill="var(--hero-wave-1)" opacity="0.7" />
-        <path d="M0 80 C70 62 130 96 210 78 S350 66 400 80 V100 H0Z" fill="var(--hero-wave-2)" opacity="0.8" />
-      </svg>
-
-      <div className="relative grid gap-5 pb-8 sm:grid-cols-[1fr_minmax(0,17rem)] sm:items-start">
+    <section aria-label="Day overview" className="rounded-2xl bg-card p-6 ring-1 ring-line sm:p-8">
+      <div className="grid gap-6 sm:grid-cols-[1fr_minmax(0,17rem)] sm:items-start">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">
+          <h2 className="text-3xl font-semibold tracking-tight">
             {isToday ? greetingFor(now) : shortDate(date)}
           </h2>
-          <p className="mt-1 text-sm text-muted">{freeLine}</p>
+          <p className="mt-2 text-base text-muted">{freeLine}</p>
         </div>
 
-        <div className="rounded-xl bg-card/90 p-3 shadow-sm ring-1 ring-line backdrop-blur">
+        <div className="rounded-xl bg-page p-4">
           <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
             {isToday ? 'Up next' : 'First up'}
           </h3>

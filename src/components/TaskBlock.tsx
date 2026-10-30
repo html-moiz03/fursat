@@ -19,8 +19,8 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
   const range = `${fromMinutes(start)}–${fromMinutes(start + task.durationMin)}`;
 
   const colors = conflict
-    ? 'border-red-500 bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200'
-    : 'border-sky-600 bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200';
+    ? 'border-red-500 bg-red-100 text-red-900'
+    : 'border-sky-600 bg-sky-100 text-sky-900';
 
   return (
     <div

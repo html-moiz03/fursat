@@ -69,7 +69,7 @@ export function Timeline() {
         {freeZones.map((z) => (
           <div
             key={`free-${z.startMin}`}
-            className="absolute left-2 right-2 flex items-center justify-center overflow-hidden rounded-lg border border-dashed border-brand/50 bg-brand-soft text-sm font-medium text-brand"
+            className="absolute left-2 right-2 flex items-center justify-center overflow-hidden rounded-lg border border-dashed border-brand/30 bg-brand-soft/70 text-sm font-medium text-brand"
             style={{ top: top(z.startMin), height: (z.endMin - z.startMin) * PX_PER_MIN }}
           >
             {formatDuration(z.endMin - z.startMin)} free ({fromMinutes(z.startMin)}–{fromMinutes(z.endMin)})
@@ -84,7 +84,7 @@ export function Timeline() {
               top: top(b.startMin),
               height: (b.endMin - b.startMin) * PX_PER_MIN,
               backgroundColor: b.anchor.color,
-              opacity: 0.92,
+              opacity: 0.95,
             }}
           >
             <span className="font-medium">{b.anchor.title}</span>{' '}
