@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import { freeRanges, hasConflict, placedOn } from '../lib/fit';
 import { anchorsForDate, computeGaps } from '../lib/gaps';
 import { formatDuration, fromMinutes, nowMinutes, todayString } from '../lib/time';
 import { usePlannerStore } from '../store/usePlannerStore';
+import { TaskBlock } from './TaskBlock';
 
 const PX_PER_MIN = 1;
 
@@ -17,6 +19,7 @@ function useNowMinutes(): number {
 
 export function Timeline() {
   const anchors = usePlannerStore((s) => s.anchors);
+  const tasks = usePlannerStore((s) => s.tasks);
   const settings = usePlannerStore((s) => s.settings);
   const date = usePlannerStore((s) => s.selectedDate);
   const now = useNowMinutes();
@@ -42,19 +45,31 @@ export function Timeline() {
     [anchors, date, dayStartMin, dayEndMin],
   );
 
+  // Tasks on this day, and the free time that is left once they are taken out of the gaps.
+  const dayTasks = useMemo(
+    () => tasks.filter((t) => t.status !== 'inbox' && t.date === date && t.startMin !== undefined),
+    [tasks, date],
+  );
+  const freeZones = useMemo(() => {
+    const placed = placedOn(tasks, date);
+    return gaps
+      .flatMap((g) => freeRanges(g, placed))
+      .filter((z) => z.endMin - z.startMin >= minGapMin);
+  }, [gaps, tasks, date, minGapMin]);
+
   const hours: number[] = [];
   for (let h = Math.ceil(dayStartMin / 60); h <= Math.floor(dayEndMin / 60); h++) hours.push(h);
 
   const top = (min: number) => (min - dayStartMin) * PX_PER_MIN;
   const showNow = date === todayString() && now >= dayStartMin && now <= dayEndMin;
-  const totalFree = gaps.reduce((sum, g) => sum + g.lengthMin, 0);
+  const totalFree = freeZones.reduce((sum, z) => sum + (z.endMin - z.startMin), 0);
 
   return (
     <section aria-label="Timeline for the selected day">
       <p className="mb-3 text-sm text-stone-600 dark:text-stone-400">
-        {gaps.length === 0
+        {freeZones.length === 0
           ? 'No free time left in this day window.'
-          : `${formatDuration(totalFree)} free across ${gaps.length} ${gaps.length === 1 ? 'gap' : 'gaps'}.`}
+          : `${formatDuration(totalFree)} free across ${freeZones.length} ${freeZones.length === 1 ? 'gap' : 'gaps'}.`}
       </p>
 
       <div
@@ -73,13 +88,13 @@ export function Timeline() {
           </div>
         ))}
 
-        {gaps.map((g) => (
+        {freeZones.map((z) => (
           <div
-            key={`gap-${g.startMin}`}
-            className="absolute left-2 right-2 flex items-center justify-center rounded-md border border-dashed border-emerald-600/60 bg-emerald-500/10 text-sm font-medium text-emerald-800 dark:text-emerald-300"
-            style={{ top: top(g.startMin), height: g.lengthMin * PX_PER_MIN }}
+            key={`free-${z.startMin}`}
+            className="absolute left-2 right-2 flex items-center justify-center overflow-hidden rounded-md border border-dashed border-emerald-600/60 bg-emerald-500/10 text-sm font-medium text-emerald-800 dark:text-emerald-300"
+            style={{ top: top(z.startMin), height: (z.endMin - z.startMin) * PX_PER_MIN }}
           >
-            {formatDuration(g.lengthMin)} free ({fromMinutes(g.startMin)}–{fromMinutes(g.endMin)})
+            {formatDuration(z.endMin - z.startMin)} free ({fromMinutes(z.startMin)}–{fromMinutes(z.endMin)})
           </div>
         ))}
 
@@ -99,6 +114,16 @@ export function Timeline() {
               {fromMinutes(b.startMin)}–{fromMinutes(b.endMin)}
             </span>
           </div>
+        ))}
+
+        {dayTasks.map((t) => (
+          <TaskBlock
+            key={t.id}
+            task={t}
+            top={top(t.startMin ?? 0)}
+            height={t.durationMin * PX_PER_MIN}
+            conflict={hasConflict(t, anchors, { dayStartMin, dayEndMin, minGapMin })}
+          />
         ))}
 
         {showNow && (

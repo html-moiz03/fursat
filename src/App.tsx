@@ -1,5 +1,7 @@
 import { AnchorForm } from './components/AnchorForm';
 import { AnchorList } from './components/AnchorList';
+import { DaySummary } from './components/DaySummary';
+import { TaskInbox } from './components/TaskInbox';
 import { Timeline } from './components/Timeline';
 import { addDays, todayString } from './lib/time';
 import { usePlannerStore } from './store/usePlannerStore';
@@ -44,9 +46,11 @@ export default function App() {
       <main className="mx-auto grid max-w-5xl gap-8 px-4 py-6 md:grid-cols-[minmax(0,1fr)_320px]">
         <div>
           <h2 className="mb-1 text-xl font-semibold">{prettyDate(selectedDate)}</h2>
+          <DaySummary />
           <Timeline />
         </div>
         <aside className="space-y-8">
+          <TaskInbox />
           <AnchorForm />
           <AnchorList />
         </aside>

@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Anchor, Settings, Task } from '../types';
+import { checkFit, placedOn } from '../lib/fit';
+import { computeGaps } from '../lib/gaps';
 import { toMinutes, todayString } from '../lib/time';
 
 const SAMPLE_ANCHORS: Anchor[] = [
@@ -53,13 +55,22 @@ type PlannerState = {
   removeAnchor: (id: string) => void;
   addTask: (title: string, durationMin: number) => void;
   removeTask: (id: string) => void;
+  /**
+   * Put an inbox task into the gap that starts at `gapStartMin`, at the earliest
+   * time that fits. Returns false (and changes nothing) if it does not fit.
+   */
+  planTask: (id: string, date: string, gapStartMin: number) => boolean;
+  /** Send a planned or done task back to the inbox. */
+  unplanTask: (id: string) => void;
+  /** Tick a planned task as done, or untick it. */
+  toggleDone: (id: string) => void;
   setSelectedDate: (date: string) => void;
   updateSettings: (patch: Partial<Settings>) => void;
 };
 
 export const usePlannerStore = create<PlannerState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       anchors: SAMPLE_ANCHORS,
       tasks: [],
       settings: DEFAULT_SETTINGS,
@@ -70,6 +81,7 @@ export const usePlannerStore = create<PlannerState>()(
           anchors: [...s.anchors, { ...anchor, id: crypto.randomUUID(), source: 'manual' }],
         })),
       removeAnchor: (id) => set((s) => ({ anchors: s.anchors.filter((a) => a.id !== id) })),
+
       addTask: (title, durationMin) =>
         set((s) => ({
           tasks: [
@@ -78,6 +90,41 @@ export const usePlannerStore = create<PlannerState>()(
           ],
         })),
       removeTask: (id) => set((s) => ({ tasks: s.tasks.filter((t) => t.id !== id) })),
+
+      planTask: (id, date, gapStartMin) => {
+        const { tasks, anchors, settings } = get();
+        const task = tasks.find((t) => t.id === id);
+        if (!task) return false;
+
+        const gap = computeGaps(anchors, date, settings).find((g) => g.startMin === gapStartMin);
+        if (!gap) return false;
+
+        // The task's own old slot (if any) must not block its new one.
+        const result = checkFit(task.durationMin, gap, placedOn(tasks, date, id));
+        if (!result.fits) return false;
+
+        set({
+          tasks: tasks.map((t) =>
+            t.id === id ? { ...t, status: 'planned', date, startMin: result.startMin } : t,
+          ),
+        });
+        return true;
+      },
+      unplanTask: (id) =>
+        set((s) => ({
+          tasks: s.tasks.map((t) =>
+            t.id === id ? { ...t, status: 'inbox', date: undefined, startMin: undefined } : t,
+          ),
+        })),
+      toggleDone: (id) =>
+        set((s) => ({
+          tasks: s.tasks.map((t) =>
+            t.id === id && t.status !== 'inbox'
+              ? { ...t, status: t.status === 'done' ? 'planned' : 'done' }
+              : t,
+          ),
+        })),
+
       setSelectedDate: (date) => set({ selectedDate: date }),
       updateSettings: (patch) => set((s) => ({ settings: { ...s.settings, ...patch } })),
     }),
