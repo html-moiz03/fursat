@@ -11,6 +11,7 @@ describe('shortcutAction', () => {
     expect(press('a')).toBe('anchors');
     expect(press('n')).toBe('new-task');
     expect(press('f')).toBe('focus');
+    expect(press('h')).toBe('history');
     expect(press('ArrowLeft')).toBe('prev');
     expect(press('ArrowRight')).toBe('next');
     expect(press('?')).toBe('help');

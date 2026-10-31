@@ -3,7 +3,7 @@ import { usePlannerStore } from '../store/usePlannerStore';
 import { InstallButton } from './InstallButton';
 import { ThemeSwitch } from './ThemeSwitch';
 
-export type View = 'today' | 'week' | 'anchors';
+export type View = 'today' | 'week' | 'anchors' | 'history';
 
 const icon = 'h-5 w-5 shrink-0';
 
@@ -35,6 +35,14 @@ function AnchorsIcon() {
   );
 }
 
+function HistoryIcon() {
+  return (
+    <svg className={icon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 20V13M10 20V6M15 20v-9M20 20V9" />
+    </svg>
+  );
+}
+
 function Brand() {
   return (
     <div className="flex items-center gap-2.5">
@@ -54,12 +62,13 @@ const ITEMS: { view: View; label: string; Icon: () => React.JSX.Element }[] = [
   { view: 'today', label: 'Today', Icon: TodayIcon },
   { view: 'week', label: 'Week', Icon: WeekIcon },
   { view: 'anchors', label: 'Anchors', Icon: AnchorsIcon },
+  { view: 'history', label: 'Focus', Icon: HistoryIcon },
 ];
 
 export function Sidebar({ view, onChange }: { view: View; onChange: (v: View) => void }) {
   const inboxCount = usePlannerStore((s) => s.tasks.filter((t) => t.status === 'inbox').length);
   const anchorCount = usePlannerStore((s) => s.anchors.filter((a) => a.source === 'manual').length);
-  const counts: Record<View, number> = { today: inboxCount, week: 0, anchors: anchorCount };
+  const counts: Record<View, number> = { today: inboxCount, week: 0, anchors: anchorCount, history: 0 };
 
   return (
     <>

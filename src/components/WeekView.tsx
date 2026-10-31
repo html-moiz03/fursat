@@ -1,6 +1,7 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { m } from 'motion/react';
 import { useMemo } from 'react';
+import { useKeyboardMove } from '../lib/useKeyboardMove';
 import { dayTotals, formatFocused } from '../lib/focusLog';
 import { formatDuration, fromMinutes, nowMinutes, todayString } from '../lib/time';
 import { dayOverview, firstStart, slotOnDay, weekDates, type DayOverview } from '../lib/week';
@@ -24,14 +25,24 @@ const grip =
 /** A planned task in a day column. Drag it by the grip to another day. */
 function TaskItem({ item }: { item: DayOverview['items'][number] }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: item.id });
+  const { lifted, gripRef, onKeyDown, onBlur } = useKeyboardMove(item.id);
   return (
     <li
       ref={setNodeRef}
-      className={`flex min-w-0 items-start gap-1 rounded-md border-l-4 bg-page px-1.5 py-1 text-xs ${isDragging ? 'opacity-40' : ''}`}
+      className={`flex min-w-0 items-start gap-1 rounded-md border-l-4 bg-page px-1.5 py-1 text-xs ${isDragging ? 'opacity-40' : ''} ${lifted ? 'ring-2 ring-brand' : ''}`}
       style={{ borderLeftColor: item.color }}
       title={`${item.title}, ${fromMinutes(item.startMin)}–${fromMinutes(item.endMin)}`}
     >
-      <button type="button" {...attributes} {...listeners} aria-label={`Drag ${item.title} to another day`} className={grip}>
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        ref={gripRef}
+        onKeyDown={onKeyDown}
+        onBlur={onBlur}
+        aria-label={`Drag ${item.title} to another day, or press Space and use the arrow keys`}
+        className={grip}
+      >
         ⠿
       </button>
       <span className="min-w-0 flex-1">

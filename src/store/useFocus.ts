@@ -28,6 +28,7 @@ type FocusState = {
   stop: () => void;
   setMinimized: (minimized: boolean) => void;
   toggleSound: () => void;
+  clearLog: () => void;
 };
 
 /** The running focus session. Saved, so a reload in the middle of a session picks up where it was. */
@@ -58,6 +59,7 @@ export const useFocus = create<FocusState>()(
         }),
       setMinimized: (minimized) => set({ minimized }),
       toggleSound: () => set((s) => ({ sound: !s.sound })),
+      clearLog: () => set({ log: [] }),
     }),
     {
       name: 'fursat:focus',

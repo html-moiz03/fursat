@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pauseSession, startSession } from './focus';
-import { dayTotals, entryFor, formatFocused } from './focusLog';
+import { dayTotals, entryFor, formatFocused, groupByDay, lastDays, streak } from './focusLog';
 
 const T0 = 1_000_000;
 
@@ -37,5 +37,28 @@ describe('dayTotals and formatFocused', () => {
     expect(formatFocused(200)).toBe('3h 20m');
     expect(formatFocused(45)).toBe('45m');
     expect(formatFocused(0)).toBe('');
+  });
+});
+
+describe('lastDays, streak and groupByDay', () => {
+  const e = (id: string, date: string, minutes = 10) => ({ id, date, title: id, minutes });
+
+  it('lists the last days oldest first, ending today', () => {
+    expect(lastDays('2026-11-03', 3)).toEqual(['2026-11-01', '2026-11-02', '2026-11-03']);
+  });
+  it('counts consecutive days, today included', () => {
+    expect(streak([e('a', '2026-11-03'), e('b', '2026-11-02'), e('c', '2026-11-01')], '2026-11-03')).toBe(3);
+  });
+  it('does not break the streak just because today has none yet', () => {
+    expect(streak([e('b', '2026-11-02'), e('c', '2026-11-01')], '2026-11-03')).toBe(2);
+  });
+  it('is zero after a gap of a day or more', () => {
+    expect(streak([e('c', '2026-10-30')], '2026-11-03')).toBe(0);
+    expect(streak([e('a', '2026-11-03'), e('c', '2026-11-01')], '2026-11-03')).toBe(1);
+  });
+  it('groups newest day first with totals, newest entry first', () => {
+    const groups = groupByDay([e('a', '2026-11-01', 5), e('b', '2026-11-02', 20), e('c', '2026-11-02', 30)]);
+    expect(groups.map((g) => [g.date, g.minutes])).toEqual([['2026-11-02', 50], ['2026-11-01', 5]]);
+    expect(groups[0].entries.map((x) => x.id)).toEqual(['c', 'b']);
   });
 });

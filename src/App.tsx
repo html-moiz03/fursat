@@ -3,12 +3,14 @@ import { useEffect, useRef, useState } from 'react';
 import { AnchorForm } from './components/AnchorForm';
 import { AnchorList } from './components/AnchorList';
 import { Aurora } from './components/Aurora';
+import { CarryAnnouncer } from './components/CarryAnnouncer';
 import { Card } from './components/Card';
 import { CarryOverNotice } from './components/CarryOverNotice';
 import { DataControls } from './components/DataControls';
 import { DayHoursCard } from './components/DayHoursCard';
 import { DaySummary } from './components/DaySummary';
 import { EmptyStart } from './components/EmptyStart';
+import { FocusHistory } from './components/FocusHistory';
 import { FocusLayer } from './components/FocusLayer';
 import { Greeting } from './components/Greeting';
 import { InstallButton } from './components/InstallButton';
@@ -90,6 +92,7 @@ function Shell() {
         case 'today': setView('today'); break;
         case 'week': setView('week'); break;
         case 'anchors': setView('anchors'); break;
+        case 'history': setView('history'); break;
         case 'new-task':
           e.preventDefault();
           setView('today');
@@ -117,7 +120,7 @@ function Shell() {
 
   const navButton =
     'rounded-full border border-line bg-card px-4 py-1.5 text-sm text-ink backdrop-blur-md hover:bg-brand-soft';
-  const title = view === 'today' ? prettyDate(selectedDate) : view === 'week' ? weekLabel(selectedDate) : 'Anchors';
+  const title = view === 'today' ? prettyDate(selectedDate) : view === 'week' ? weekLabel(selectedDate) : view === 'history' ? 'Focus history' : 'Anchors';
 
   return (
     <>
@@ -148,6 +151,8 @@ function Shell() {
                 </m.h1>
               </AnimatePresence>
               <div className="flex items-center gap-2">
+                {(view === 'today' || view === 'week') && (
+                  <>
                 <button className={navButton} onClick={() => setSelectedDate(addDays(selectedDate, -step))} aria-label={`Previous ${unit}`}>
                   ←
                 </button>
@@ -157,6 +162,8 @@ function Shell() {
                 <button className={navButton} onClick={() => setSelectedDate(addDays(selectedDate, step))} aria-label={`Next ${unit}`}>
                   →
                 </button>
+                  </>
+                )}
                 <button
                   className={`${navButton} hidden px-3 md:block`}
                   onClick={() => setHelpOpen(true)}
@@ -208,6 +215,8 @@ function Shell() {
                       }}
                     />
                   </PlannerDnd>
+                ) : view === 'history' ? (
+                  <FocusHistory />
                 ) : (
                   <div className="grid max-w-4xl items-start gap-8 md:grid-cols-2">
                     <div className="space-y-8">
@@ -236,6 +245,7 @@ function Shell() {
         <PwaStatus />
       </div>
       <FocusLayer />
+      <CarryAnnouncer />
       <Toaster />
       <ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
     </>
