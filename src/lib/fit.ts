@@ -103,3 +103,24 @@ export function fitFrom(durationMin: number, gaps: Range[], fromMin: number, pla
   if (!gap) return null;
   return checkFit(durationMin, { startMin: fromMin, endMin: gap.endMin }, placed);
 }
+
+/**
+ * The longest a planned task could be if it keeps its start: it may grow until the next
+ * anchor, the next placed task or the end of the day. Null when it does not start inside
+ * free time at all (a conflict), in which case it cannot be resized.
+ */
+export function maxDuration(task: Task, gaps: Range[], placed: Range[]): number | null {
+  if (task.startMin === undefined) return null;
+  const start = task.startMin;
+  const gap = gaps.find((g) => g.startMin <= start && start < g.endMin);
+  if (!gap) return null;
+  const room = freeRanges(gap, placed).find((r) => r.startMin <= start && start < r.endMin);
+  return room ? room.endMin - start : null;
+}
+
+/** A wanted length rounded to the nearest `step` minutes and kept between `step` and `max`. */
+export function snapDuration(wantedMin: number, maxMin: number, step = 5): number {
+  const snapped = Math.round(wantedMin / step) * step;
+  const ceiling = Math.max(step, Math.floor(maxMin / step) * step);
+  return Math.min(Math.max(snapped, step), ceiling);
+}

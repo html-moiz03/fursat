@@ -151,3 +151,38 @@ describe('moving a placed task', () => {
     expect(st().tasks[0]).toMatchObject({ status: 'done', startMin: 600 });
   });
 });
+
+describe('resizeTask', () => {
+  beforeEach(reset);
+
+  const plan = (title: string, min: number, from: number) => {
+    st().addTask(title, min);
+    const id = st().tasks[st().tasks.length - 1].id;
+    st().planTask(id, DATE, from);
+    return id;
+  };
+
+  it('grows and shrinks a task, snapping to 5 minutes', () => {
+    const id = plan('Write', 30, 600);
+    expect(st().resizeTask(id, 47)).toBe(45);
+    expect(st().tasks[0].durationMin).toBe(45);
+    expect(st().resizeTask(id, 2)).toBe(5);
+  });
+
+  it('stops at an anchor', () => {
+    st().addAnchor({ title: 'Lunch', startMin: 720, endMin: 780, repeatDays: [1], kind: 'meal', color: '#111' });
+    const id = plan('Write', 30, 660);
+    expect(st().resizeTask(id, 300)).toBe(60);
+  });
+
+  it('stops at the next placed task', () => {
+    const id = plan('A', 30, 600);
+    plan('B', 30, 660);
+    expect(st().resizeTask(id, 200)).toBe(60);
+  });
+
+  it('refuses an inbox task', () => {
+    st().addTask('Idle', 30);
+    expect(st().resizeTask(st().tasks[0].id, 60)).toBeNull();
+  });
+});

@@ -20,6 +20,7 @@ npm run build    # type-check + production build
 - Task inbox: add a task with a length and drag it into a free gap. While you drag, gaps that fit light up and gaps that are too short say so. A dropdown does the same without a mouse
 - Placed tasks appear on the timeline; tick them off, or send them back to the inbox
 - Drag a placed task by its grip (⠿) to another gap, or within its own gap. A drop that does not fit is ignored and the task stays put
+- Resize a placed task: drag the bottom edge of its block (or focus it and press the up and down arrow keys). It snaps to 5 minutes and stops at the next anchor, task or the end of the day
 - Edit an anchor from the Anchors page (name, times, repeat days). Tasks it now overlaps are flagged as conflicts rather than silently moved
 - Fragmentation is respected: two 60-minute holes do not fit a 90-minute task
 - A task that ends up overlapping an anchor you added later is flagged as a conflict
@@ -65,7 +66,7 @@ src/
   lib/fit.ts                freeRanges(), checkFit(), fitFrom(), placedOn(), hasConflict()
   lib/fit.test.ts           35 tests for the task-fitting rules
   store/usePlannerStore.ts  Zustand store, persisted under "fursat:v1"
-  store/usePlannerStore.test.ts  14 tests for editing anchors, moving placed tasks, dropping on a day and carry-over
+  store/usePlannerStore.test.ts  18 tests for editing anchors, moving and resizing placed tasks, dropping on a day and carry-over
   components/               Sidebar, Greeting, EmptyStart, PlannerDnd (drag and drop), MonthCalendar, Timeline, TaskInbox, TaskBlock, DaySummary, AnchorForm, AnchorList, DataControls, PrayerCard, DayHoursCard, ThemeSwitch, Aurora, Toaster, FocusLayer, ShortcutHelp, Motion, WindowNotice, WeekView, CarryOverNotice, InstallButton, PwaStatus, Card
 ```
 
@@ -73,5 +74,5 @@ Times are stored as minutes since midnight and dates as `YYYY-MM-DD` strings, so
 
 ## Next steps
 
-1. Resize a placed task, keyboard-only moving, edit prayer settings per prayer
+1. Keyboard-only moving, edit prayer settings per prayer, focus stats
 2. Optional Supabase sync, then reorder or resize tasks inside a day

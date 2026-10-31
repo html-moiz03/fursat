@@ -1,7 +1,8 @@
 import { useDraggable } from '@dnd-kit/core';
 import { m } from 'motion/react';
+import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import type { Task } from '../types';
-import { fromMinutes } from '../lib/time';
+import { formatDuration, fromMinutes } from '../lib/time';
 import { useFocus } from '../store/useFocus';
 import { usePlannerStore } from '../store/usePlannerStore';
 
@@ -18,6 +19,9 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
   const unplanTask = usePlannerStore((s) => s.unplanTask);
   const startFocus = useFocus((s) => s.start);
   const setMinimized = useFocus((s) => s.setMinimized);
+  const resizeTask = usePlannerStore((s) => s.resizeTask);
+  const [resizing, setResizing] = useState(false);
+  const grab = useRef<{ y: number; min: number } | null>(null);
   const focusing = useFocus((s) => s.session?.taskId === task.id);
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id });
@@ -29,13 +33,33 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
     ? 'border-danger-line bg-danger text-danger-ink'
     : 'border-task-line bg-task text-task-ink';
 
+  function onResizeDown(e: PointerEvent<HTMLDivElement>) {
+    e.preventDefault();
+    e.currentTarget.setPointerCapture(e.pointerId);
+    grab.current = { y: e.clientY, min: task.durationMin };
+    setResizing(true);
+  }
+  function onResizeMove(e: PointerEvent<HTMLDivElement>) {
+    // The timeline is one pixel per minute, so the pointer's travel is the change in minutes.
+    if (grab.current) resizeTask(task.id, grab.current.min + (e.clientY - grab.current.y));
+  }
+  function onResizeEnd() {
+    grab.current = null;
+    setResizing(false);
+  }
+  function onResizeKey(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+    e.preventDefault();
+    resizeTask(task.id, task.durationMin + (e.key === 'ArrowDown' ? 5 : -5));
+  }
+
   return (
     <m.div
       ref={setNodeRef}
       className={`absolute left-4 right-4 z-[5] flex items-center gap-2 overflow-hidden rounded-lg border px-2 text-xs leading-none shadow-sm ${colors}`}
       initial={{ opacity: 0, scale: 0.9, top, height }}
       animate={{ opacity: isDragging ? 0.4 : 1, scale: 1, top, height }}
-      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+      transition={resizing ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 30 }}
       title={`${task.title}, ${range}${conflict ? ' (overlaps something else)' : ''}`}
     >
       <button
@@ -79,6 +103,26 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
       >
         ×
       </button>
+      {!conflict && (
+        <div
+          role="slider"
+          tabIndex={0}
+          aria-label={`Length of ${task.title}`}
+          aria-orientation="vertical"
+          aria-valuemin={5}
+          aria-valuenow={task.durationMin}
+          aria-valuetext={formatDuration(task.durationMin)}
+          title="Drag to change the length (or use the up and down arrow keys)"
+          onPointerDown={onResizeDown}
+          onPointerMove={onResizeMove}
+          onPointerUp={onResizeEnd}
+          onPointerCancel={onResizeEnd}
+          onKeyDown={onResizeKey}
+          className="group absolute inset-x-0 bottom-0 flex h-2 cursor-ns-resize touch-none items-end justify-center focus-visible:outline-2"
+        >
+          <span className={`mb-px h-0.5 w-8 rounded-full bg-current transition-opacity ${resizing ? 'opacity-70' : 'opacity-0 group-hover:opacity-50 group-focus-visible:opacity-70'}`} />
+        </div>
+      )}
     </m.div>
   );
 }

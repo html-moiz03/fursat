@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Anchor, Task } from '../types';
-import { checkFit, fitFrom, freeRanges, hasConflict, largestRoom, placedOn } from './fit';
+import { checkFit, fitFrom, freeRanges, hasConflict, largestRoom, maxDuration, placedOn, snapDuration } from './fit';
 
 const MON = '2026-11-02'; // a Monday
 const TUE = '2026-11-03';
@@ -204,5 +204,26 @@ describe('fitFrom', () => {
   it('returns null outside every gap', () => {
     expect(fitFrom(30, gaps, 700, [])).toBeNull();
     expect(fitFrom(30, gaps, 540, [])).toBeNull(); // the end of a gap is not inside it
+  });
+});
+
+describe('maxDuration and snapDuration', () => {
+  const gaps = [{ startMin: 540, endMin: 720 }];
+  const task = (startMin: number, durationMin: number) =>
+    ({ id: 'a', title: 'a', durationMin, status: 'planned', date: '2026-01-05', startMin, createdAt: 0 }) as const;
+
+  it('lets a task grow to the end of its gap', () => {
+    expect(maxDuration(task(600, 30), gaps, [])).toBe(120);
+  });
+  it('stops at the next placed task', () => {
+    expect(maxDuration(task(600, 30), gaps, [{ startMin: 660, endMin: 700 }])).toBe(60);
+  });
+  it('is null for a task outside free time', () => {
+    expect(maxDuration(task(800, 30), gaps, [])).toBeNull();
+  });
+  it('snaps to 5 minutes and keeps between 5 and the maximum', () => {
+    expect(snapDuration(47, 120)).toBe(45);
+    expect(snapDuration(-20, 120)).toBe(5);
+    expect(snapDuration(500, 118)).toBe(115);
   });
 });

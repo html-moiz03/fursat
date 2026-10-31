@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { Anchor, PrayerSettings, Settings, Task } from '../types';
 import { overdueTasks, planCarryOver } from '../lib/carryOver';
-import { fitFrom, placedOn } from '../lib/fit';
+import { fitFrom, maxDuration, placedOn, snapDuration } from '../lib/fit';
 import { computeGaps } from '../lib/gaps';
 import { toMinutes, todayString } from '../lib/time';
 import { slotOnDay } from '../lib/week';
@@ -92,6 +92,8 @@ type PlannerState = {
   addPrayerAnchors: (month: string, anchors: Anchor[]) => void;
   /** Send a planned or done task back to the inbox. */
   unplanTask: (id: string) => void;
+  /** Change a placed task's length, keeping its start. Snaps to 5 minutes and stops at the next obstacle. Returns the new length, or null if it cannot be resized. */
+  resizeTask: (id: string, wantedMin: number) => number | null;
   /**
    * Move unfinished tasks from earlier days into what is left of `today`, from `fromMin` on.
    * A task with no room left goes to the inbox. Returns how many went where.
@@ -190,6 +192,18 @@ export const usePlannerStore = create<PlannerState>()(
             ...fetched,
           ],
         })),
+      resizeTask: (id, wantedMin) => {
+        const { tasks, anchors, settings } = get();
+        const task = tasks.find((t) => t.id === id);
+        if (!task || task.status === 'inbox' || task.date === undefined) return null;
+        const max = maxDuration(task, computeGaps(anchors, task.date, { ...settings, minGapMin: 0 }), placedOn(tasks, task.date, id));
+        if (max === null) return null;
+        const durationMin = snapDuration(wantedMin, max);
+        if (durationMin !== task.durationMin) {
+          set({ tasks: tasks.map((t) => (t.id === id ? { ...t, durationMin } : t)) });
+        }
+        return durationMin;
+      },
       unplanTask: (id) =>
         set((s) => ({
           tasks: s.tasks.map((t) =>
