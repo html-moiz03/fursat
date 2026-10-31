@@ -1,6 +1,7 @@
 import { useDraggable } from '@dnd-kit/core';
 import { m } from 'motion/react';
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
+import { useToasts } from '../store/useToasts';
 import type { Task } from '../types';
 import { formatDuration, fromMinutes } from '../lib/time';
 import { useFocus } from '../store/useFocus';
@@ -20,6 +21,12 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
   const startFocus = useFocus((s) => s.start);
   const setMinimized = useFocus((s) => s.setMinimized);
   const resizeTask = usePlannerStore((s) => s.resizeTask);
+  const nudgeTask = usePlannerStore((s) => s.nudgeTask);
+  const planTask = usePlannerStore((s) => s.planTask);
+  const showToast = useToasts((s) => s.show);
+  const [lifted, setLifted] = useState(false);
+  const [announce, setAnnounce] = useState('');
+  const origin = useRef<{ date: string; startMin: number } | null>(null);
   const [resizing, setResizing] = useState(false);
   const grab = useRef<{ y: number; min: number } | null>(null);
   const focusing = useFocus((s) => s.session?.taskId === task.id);
@@ -32,6 +39,43 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
   const colors = conflict
     ? 'border-danger-line bg-danger text-danger-ink'
     : 'border-task-line bg-task text-task-ink';
+
+  const spanOf = (startMin: number) => `${fromMinutes(startMin)}–${fromMinutes(startMin + task.durationMin)}`;
+
+  /** Space or Enter picks the task up, arrows step it through free spots, Enter drops it, Escape puts it back. */
+  function onGripKey(e: KeyboardEvent<HTMLButtonElement>) {
+    if (!lifted) {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        origin.current = task.date !== undefined && task.startMin !== undefined ? { date: task.date, startMin: task.startMin } : null;
+        setLifted(true);
+        setAnnounce(`Picked up ${task.title}, now ${range}. Up and down arrows move it, Enter drops it, Escape cancels.`);
+      }
+      return;
+    }
+    // While carrying the task it owns the keyboard, so letters and arrows don't also trigger shortcuts.
+    e.stopPropagation();
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+      e.preventDefault();
+      const moved = nudgeTask(task.id, e.key === 'ArrowDown' ? 1 : -1);
+      if (moved === null) {
+        showToast('No other free spot that way.', 'warn');
+        setAnnounce('No other free spot that way.');
+      } else {
+        setAnnounce(`Moved to ${spanOf(moved)}`);
+        window.requestAnimationFrame(() => e.currentTarget.scrollIntoView({ block: 'nearest' }));
+      }
+    } else if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      setLifted(false);
+      setAnnounce(`Dropped ${task.title} at ${range}.`);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      if (origin.current) planTask(task.id, origin.current.date, origin.current.startMin);
+      setLifted(false);
+      setAnnounce(`Cancelled. ${task.title} is back where it was.`);
+    }
+  }
 
   function onResizeDown(e: PointerEvent<HTMLDivElement>) {
     e.preventDefault();
@@ -56,7 +100,7 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
   return (
     <m.div
       ref={setNodeRef}
-      className={`absolute left-4 right-4 z-[5] flex items-center gap-2 overflow-hidden rounded-lg border px-2 text-xs leading-none shadow-sm ${colors}`}
+      className={`absolute left-4 right-4 z-[5] flex items-center gap-2 overflow-hidden rounded-lg border px-2 text-xs leading-none shadow-sm ${colors} ${lifted ? 'ring-2 ring-brand' : ''}`}
       initial={{ opacity: 0, scale: 0.9, top, height }}
       animate={{ opacity: isDragging ? 0.4 : 1, scale: 1, top, height }}
       transition={resizing ? { duration: 0 } : { type: 'spring', stiffness: 380, damping: 30 }}
@@ -66,11 +110,14 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
         type="button"
         {...attributes}
         {...listeners}
-        aria-label={`Drag ${task.title} to another gap`}
-        className="-ml-1 shrink-0 cursor-grab touch-none px-0.5 opacity-60 hover:opacity-100"
+        aria-label={`Drag ${task.title} to another gap, or press Space to move it with the arrow keys`}
+        onKeyDown={onGripKey}
+        onBlur={() => setLifted(false)}
+        className={`-ml-1 shrink-0 cursor-grab touch-none px-0.5 hover:opacity-100 ${lifted ? 'text-brand opacity-100' : 'opacity-60'}`}
       >
         ⠿
       </button>
+      <span className="sr-only" role="status">{announce}</span>
       <input
         type="checkbox"
         checked={done}

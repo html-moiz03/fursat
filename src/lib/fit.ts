@@ -124,3 +124,26 @@ export function snapDuration(wantedMin: number, maxMin: number, step = 5): numbe
   const ceiling = Math.max(step, Math.floor(maxMin / step) * step);
   return Math.min(Math.max(snapped, step), ceiling);
 }
+
+/**
+ * Where a task of `durationMin` can be put by keyboard: the top and the bottom of every free
+ * stretch it fits in, sorted. `placed` must not include the task itself, so its own slot counts as free.
+ */
+export function moveTargets(durationMin: number, gaps: Range[], placed: Range[]): number[] {
+  const starts = new Set<number>();
+  for (const g of gaps) {
+    for (const r of freeRanges(g, placed)) {
+      if (r.endMin - r.startMin < durationMin) continue;
+      starts.add(r.startMin);
+      starts.add(r.endMin - durationMin);
+    }
+  }
+  return [...starts].sort((a, b) => a - b);
+}
+
+/** The next target after `current` (dir 1) or the previous one before it (dir -1), or null at the end. */
+export function stepStart(targets: number[], current: number, dir: 1 | -1): number | null {
+  if (dir === 1) return targets.find((t) => t > current) ?? null;
+  for (let i = targets.length - 1; i >= 0; i--) if (targets[i] < current) return targets[i];
+  return null;
+}

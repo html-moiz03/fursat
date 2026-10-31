@@ -186,3 +186,25 @@ describe('resizeTask', () => {
     expect(st().resizeTask(st().tasks[0].id, 60)).toBeNull();
   });
 });
+
+describe('nudgeTask', () => {
+  beforeEach(reset);
+
+  it('steps a task through the free spots of its day', () => {
+    st().addAnchor({ title: 'Lunch', startMin: 720, endMin: 780, repeatDays: [1], kind: 'meal', color: '#111' });
+    st().addTask('Write', 60);
+    const id = st().tasks[0].id;
+    st().planTask(id, DATE, 600);
+    expect(st().nudgeTask(id, 1)).toBe(660); // bottom of the pre-lunch stretch
+    expect(st().nudgeTask(id, 1)).toBe(780); // top of the afternoon, after lunch
+    expect(st().nudgeTask(id, -1)).toBe(660);
+  });
+
+  it('returns null at the last spot and leaves the task alone', () => {
+    st().addTask('Write', 60);
+    const id = st().tasks[0].id;
+    st().planTask(id, DATE, 360);
+    expect(st().nudgeTask(id, -1)).toBeNull();
+    expect(st().tasks[0].startMin).toBe(360);
+  });
+});

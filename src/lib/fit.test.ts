@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Anchor, Task } from '../types';
-import { checkFit, fitFrom, freeRanges, hasConflict, largestRoom, maxDuration, placedOn, snapDuration } from './fit';
+import { checkFit, fitFrom, freeRanges, hasConflict, largestRoom, maxDuration, moveTargets, placedOn, snapDuration, stepStart } from './fit';
 
 const MON = '2026-11-02'; // a Monday
 const TUE = '2026-11-03';
@@ -225,5 +225,26 @@ describe('maxDuration and snapDuration', () => {
     expect(snapDuration(47, 120)).toBe(45);
     expect(snapDuration(-20, 120)).toBe(5);
     expect(snapDuration(500, 118)).toBe(115);
+  });
+});
+
+describe('moveTargets and stepStart', () => {
+  const gaps = [{ startMin: 540, endMin: 720 }, { startMin: 780, endMin: 840 }];
+
+  it('offers the top and bottom of every stretch the task fits in', () => {
+    expect(moveTargets(60, gaps, [])).toEqual([540, 660, 780]);
+  });
+  it('skips stretches that are too short', () => {
+    expect(moveTargets(90, gaps, [])).toEqual([540, 630]);
+  });
+  it('works around placed tasks', () => {
+    expect(moveTargets(30, [gaps[0]], [{ startMin: 600, endMin: 660 }])).toEqual([540, 570, 660, 690]);
+  });
+  it('steps to the next or previous target, or null at the ends', () => {
+    const t = [540, 660, 780];
+    expect(stepStart(t, 600, 1)).toBe(660);
+    expect(stepStart(t, 600, -1)).toBe(540);
+    expect(stepStart(t, 780, 1)).toBeNull();
+    expect(stepStart(t, 540, -1)).toBeNull();
   });
 });
