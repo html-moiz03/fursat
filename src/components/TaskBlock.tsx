@@ -2,6 +2,7 @@ import { useDraggable } from '@dnd-kit/core';
 import { m } from 'motion/react';
 import type { Task } from '../types';
 import { fromMinutes } from '../lib/time';
+import { useFocus } from '../store/useFocus';
 import { usePlannerStore } from '../store/usePlannerStore';
 
 type Props = {
@@ -15,6 +16,9 @@ type Props = {
 export function TaskBlock({ task, top, height, conflict }: Props) {
   const toggleDone = usePlannerStore((s) => s.toggleDone);
   const unplanTask = usePlannerStore((s) => s.unplanTask);
+  const startFocus = useFocus((s) => s.start);
+  const setMinimized = useFocus((s) => s.setMinimized);
+  const focusing = useFocus((s) => s.session?.taskId === task.id);
 
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id });
   const done = task.status === 'done';
@@ -54,6 +58,19 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
         {conflict ? 'Conflict · ' : ''}
         {range}
       </span>
+      {!done && (
+        <button
+          type="button"
+          onClick={() => (focusing ? setMinimized(false) : startFocus(task))}
+          aria-label={focusing ? `Open the focus timer for ${task.title}` : `Start a focus timer for ${task.title}`}
+          title={focusing ? 'Open focus timer' : 'Start focus timer'}
+          className={`shrink-0 px-1 ${focusing ? 'text-brand opacity-100' : 'opacity-70 hover:opacity-100'}`}
+        >
+          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="m7 4 13 8-13 8Z" />
+          </svg>
+        </button>
+      )}
       <button
         type="button"
         onClick={() => unplanTask(task.id)}

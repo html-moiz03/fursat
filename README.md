@@ -33,7 +33,8 @@ npm run build    # type-check + production build
 - Everything is saved in the browser (localStorage). The only thing sent out is the city and country you enter for prayer times
 - Two themes: the calm light one (default) and a dark "Midnight" one with a slow drifting glow and film grain, plus Auto to follow the device. The switch is in the sidebar (top right on a phone)
 - Motion that helps: views fade between each other, blocks spring into place, the free-time counter glides, a ring shows how much of the day is done and a bar shows the current item's progress. All of it switches off for people who ask their device to reduce motion
-- Friendlier: keyboard shortcuts (press ? to list them: T today, W week, A anchors, N new task, arrows for the previous or next day), a toast that says why a drop did not fit, and a three-step intro for first-time visitors
+- Focus timer: press the play button on a placed task (or F for your current one) to open a full-screen countdown with a progress ring. Pause, add 5 minutes, finish early, or tuck it into a small pill with Esc. The time shows in the tab title, a chime plays at the end, and a running session survives a reload
+- Friendlier: keyboard shortcuts (press ? to list them: T today, W week, A anchors, N new task, F focus, arrows for the previous or next day), a toast that says why a drop did not fit, and a three-step intro for first-time visitors
 
 ## Where things live
 
@@ -57,12 +58,15 @@ src/
   lib/carryOver.test.ts     tests for the carry-over rules
   lib/theme.ts              resolveTheme() and the hook that sets data-theme on <html>
   lib/shortcuts.ts          which key does what (pure, tested)
+  lib/focus.ts              focus-session maths: countdown, pause, extend, pickFocusTask() (tested)
+  lib/chime.ts              the end-of-session chime (WebAudio)
+  store/useFocus.ts         the running focus session, persisted under "fursat:focus"
   lib/useTween.ts           a number that glides to its new value
   lib/fit.ts                freeRanges(), checkFit(), fitFrom(), placedOn(), hasConflict()
   lib/fit.test.ts           35 tests for the task-fitting rules
   store/usePlannerStore.ts  Zustand store, persisted under "fursat:v1"
   store/usePlannerStore.test.ts  14 tests for editing anchors, moving placed tasks, dropping on a day and carry-over
-  components/               Sidebar, Greeting, EmptyStart, PlannerDnd (drag and drop), MonthCalendar, Timeline, TaskInbox, TaskBlock, DaySummary, AnchorForm, AnchorList, DataControls, PrayerCard, DayHoursCard, ThemeSwitch, Aurora, Toaster, ShortcutHelp, Motion, WindowNotice, WeekView, CarryOverNotice, InstallButton, PwaStatus, Card
+  components/               Sidebar, Greeting, EmptyStart, PlannerDnd (drag and drop), MonthCalendar, Timeline, TaskInbox, TaskBlock, DaySummary, AnchorForm, AnchorList, DataControls, PrayerCard, DayHoursCard, ThemeSwitch, Aurora, Toaster, FocusLayer, ShortcutHelp, Motion, WindowNotice, WeekView, CarryOverNotice, InstallButton, PwaStatus, Card
 ```
 
 Times are stored as minutes since midnight and dates as `YYYY-MM-DD` strings, so the gap maths is plain integer work with no timezone bugs.

@@ -10,6 +10,7 @@ describe('shortcutAction', () => {
     expect(press('W')).toBe('week');
     expect(press('a')).toBe('anchors');
     expect(press('n')).toBe('new-task');
+    expect(press('f')).toBe('focus');
     expect(press('ArrowLeft')).toBe('prev');
     expect(press('ArrowRight')).toBe('next');
     expect(press('?')).toBe('help');

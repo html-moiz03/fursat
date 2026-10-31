@@ -9,6 +9,7 @@ import { DataControls } from './components/DataControls';
 import { DayHoursCard } from './components/DayHoursCard';
 import { DaySummary } from './components/DaySummary';
 import { EmptyStart } from './components/EmptyStart';
+import { FocusLayer } from './components/FocusLayer';
 import { Greeting } from './components/Greeting';
 import { InstallButton } from './components/InstallButton';
 import { MonthCalendar } from './components/MonthCalendar';
@@ -24,12 +25,15 @@ import { Timeline } from './components/Timeline';
 import { Toaster } from './components/Toaster';
 import { WeekView } from './components/WeekView';
 import { WindowNotice } from './components/WindowNotice';
+import { pickFocusTask } from './lib/focus';
 import { isTypingTarget, shortcutAction } from './lib/shortcuts';
 import { useApplyTheme } from './lib/theme';
-import { addDays, todayString } from './lib/time';
+import { addDays, nowMinutes, todayString } from './lib/time';
 import { usePrayerSync } from './lib/usePrayerSync';
 import { weekDates } from './lib/week';
+import { useFocus } from './store/useFocus';
 import { usePlannerStore } from './store/usePlannerStore';
+import { useToasts } from './store/useToasts';
 
 function prettyDate(date: string): string {
   const [y, m, d] = date.split('-').map(Number);
@@ -77,6 +81,9 @@ function Shell() {
         typing: isTypingTarget(e.target),
       });
       if (!action) return;
+      // While the full-screen timer is up it owns the keyboard.
+      const focus = useFocus.getState();
+      if (focus.session && !focus.minimized) return;
       const { selectedDate: date, setSelectedDate: setDate } = usePlannerStore.getState();
       const by = viewRef.current === 'week' ? 7 : 1;
       switch (action) {
@@ -88,6 +95,16 @@ function Shell() {
           setView('today');
           window.setTimeout(() => document.getElementById('task-title')?.focus(), 80);
           break;
+        case 'focus': {
+          if (focus.session) {
+            focus.setMinimized(false);
+            break;
+          }
+          const task = pickFocusTask(usePlannerStore.getState().tasks, todayString(), nowMinutes());
+          if (task) focus.start(task);
+          else useToasts.getState().show('Nothing planned for today yet. Place a task in a gap first.');
+          break;
+        }
         case 'prev': setDate(addDays(date, -by)); break;
         case 'next': setDate(addDays(date, by)); break;
         case 'help': setHelpOpen((open) => !open); break;
@@ -218,6 +235,7 @@ function Shell() {
         </main>
         <PwaStatus />
       </div>
+      <FocusLayer />
       <Toaster />
       <ShortcutHelp open={helpOpen} onClose={() => setHelpOpen(false)} />
     </>

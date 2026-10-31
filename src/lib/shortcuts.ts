@@ -1,4 +1,4 @@
-export type ShortcutAction = 'today' | 'week' | 'anchors' | 'new-task' | 'prev' | 'next' | 'help' | 'close';
+export type ShortcutAction = 'today' | 'week' | 'anchors' | 'new-task' | 'focus' | 'prev' | 'next' | 'help' | 'close';
 
 export type KeyInfo = {
   key: string;
@@ -17,6 +17,7 @@ export function shortcutAction({ key, modified, typing }: KeyInfo): ShortcutActi
     case 'w': return 'week';
     case 'a': return 'anchors';
     case 'n': return 'new-task';
+    case 'f': return 'focus';
     case 'arrowleft': return 'prev';
     case 'arrowright': return 'next';
     case '?': return 'help';
@@ -35,6 +36,7 @@ export const SHORTCUT_LIST: { keys: string; label: string }[] = [
   { keys: 'W', label: 'Go to the week' },
   { keys: 'A', label: 'Go to anchors' },
   { keys: 'N', label: 'Add a new task' },
+  { keys: 'F', label: 'Start a focus timer on your current task' },
   { keys: '← →', label: 'Previous or next day (week in Week view)' },
   { keys: '?', label: 'Show this list' },
 ];
