@@ -1,4 +1,5 @@
 import { useDroppable } from '@dnd-kit/core';
+import { m } from 'motion/react';
 import { useMemo } from 'react';
 import { freeZonesFor } from '../lib/day';
 import { checkFit, hasConflict, type Range } from '../lib/fit';
@@ -104,9 +105,12 @@ export function Timeline() {
             className="absolute left-0 right-0 border-t border-line"
             style={{ top: top(h * 60) }}
           >
-            <span className="absolute -left-14 -top-2.5 w-12 pr-2 text-right text-xs text-muted">
-              {fromMinutes(h * 60)}
-            </span>
+            {/* The "now" label takes over when it would sit on top of an hour label. */}
+            {!(showNow && Math.abs(now - h * 60) < 14) && (
+              <span className="absolute -left-14 -top-2.5 w-12 pr-2 text-right text-xs text-muted">
+                {fromMinutes(h * 60)}
+              </span>
+            )}
           </div>
         ))}
 
@@ -120,23 +124,26 @@ export function Timeline() {
         ))}
 
         {blocks.map((b, i) => (
-          <div
+          <m.div
             key={`${b.anchor.id}-${i}`}
-            className={`absolute left-2 right-2 overflow-hidden rounded-md px-2 text-white ${
+            className={`absolute left-2 right-2 overflow-hidden rounded-lg px-2 text-white shadow-sm ${
               b.endMin - b.startMin < 40 ? 'flex items-center gap-1.5 text-xs leading-none' : 'py-1 text-sm'
             }`}
             style={{
               top: top(b.startMin),
               height: (b.endMin - b.startMin) * PX_PER_MIN,
               backgroundColor: b.anchor.color,
-              opacity: 0.95,
+              transformOrigin: 'top',
             }}
+            initial={{ opacity: 0, scaleY: 0.6 }}
+            animate={{ opacity: 0.95, scaleY: 1 }}
+            transition={{ duration: 0.45, delay: Math.min(i, 8) * 0.045, ease: [0.22, 1, 0.36, 1] }}
           >
             <span className="font-medium">{b.anchor.title}</span>{' '}
             <span className="text-white/80">
               {fromMinutes(b.startMin)}–{fromMinutes(b.endMin)}
             </span>
-          </div>
+          </m.div>
         ))}
 
         {dayTasks.map((t) => {
@@ -161,6 +168,7 @@ export function Timeline() {
             style={{ top: top(now) }}
             aria-label={`Now, ${fromMinutes(now)}`}
           >
+            <span className="pulse-dot absolute -left-1.5 -top-[5px] h-2 w-2 rounded-full bg-red-500 text-red-500" />
             <span className="absolute -left-14 -top-2.5 w-12 pr-2 text-right text-xs font-semibold text-red-500">
               {fromMinutes(now)}
             </span>

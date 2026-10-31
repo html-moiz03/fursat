@@ -53,7 +53,7 @@ const DEFAULT_SETTINGS: Settings = {
   dayStartMin: toMinutes('06:00'),
   dayEndMin: toMinutes('23:00'),
   minGapMin: 10,
-  theme: 'system',
+  theme: 'light',
 };
 
 type PlannerState = {
@@ -234,7 +234,13 @@ export const usePlannerStore = create<PlannerState>()(
     }),
     {
       name: 'fursat:v1',
-      version: 1,
+      version: 2,
+      // v1 saved theme as 'system' without ever using it; keep those visitors on the calm light look.
+      migrate: (persisted, version) => {
+        const state = persisted as { settings?: Settings };
+        if (version < 2 && state.settings?.theme === 'system') state.settings.theme = 'light';
+        return state as unknown as PlannerState;
+      },
       // selectedDate is not saved: reopening the app should land on today.
       partialize: (s) => ({ anchors: s.anchors, tasks: s.tasks, settings: s.settings }),
     },

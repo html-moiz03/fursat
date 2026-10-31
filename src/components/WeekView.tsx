@@ -1,4 +1,5 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { m } from 'motion/react';
 import { useMemo } from 'react';
 import { formatDuration, fromMinutes, nowMinutes, todayString } from '../lib/time';
 import { dayOverview, firstStart, slotOnDay, weekDates, type DayOverview } from '../lib/week';
@@ -58,10 +59,10 @@ function InboxChip({ id, title, durationMin }: { id: string; title: string; dura
   );
 }
 
-type ColumnProps = { overview: DayOverview; isToday: boolean; isPast: boolean; onOpenDay: (date: string) => void };
+type ColumnProps = { overview: DayOverview; index: number; isToday: boolean; isPast: boolean; onOpenDay: (date: string) => void };
 
 /** One day. While a task is dragged it says whether the task fits and accepts the drop. */
-function DayColumn({ overview: d, isToday, isPast, onOpenDay }: ColumnProps) {
+function DayColumn({ overview: d, index, isToday, isPast, onOpenDay }: ColumnProps) {
   const active = useActiveTask();
   const anchors = usePlannerStore((s) => s.anchors);
   const tasks = usePlannerStore((s) => s.tasks);
@@ -92,7 +93,14 @@ function DayColumn({ overview: d, isToday, isPast, onOpenDay }: ColumnProps) {
   }
 
   return (
-    <li ref={setNodeRef} className={`flex min-w-0 flex-col rounded-2xl bg-card p-3 transition ${ring}`}>
+    <m.li
+      ref={setNodeRef}
+      className={`flex min-w-0 flex-col rounded-2xl bg-card p-3 backdrop-blur-md transition-shadow ${ring}`}
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={active ? undefined : { y: -3 }}
+      transition={{ duration: 0.45, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
+    >
       <button
         type="button"
         onClick={() => onOpenDay(d.date)}
@@ -133,7 +141,7 @@ function DayColumn({ overview: d, isToday, isPast, onOpenDay }: ColumnProps) {
           )}
         </ul>
       )}
-    </li>
+    </m.li>
   );
 }
 
@@ -177,8 +185,8 @@ export function WeekView({ onOpenDay }: { onOpenDay: (date: string) => void }) {
       </div>
 
       <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-7">
-        {days.map((d) => (
-          <DayColumn key={d.date} overview={d} isToday={d.date === today} isPast={d.date < today} onOpenDay={onOpenDay} />
+        {days.map((d, i) => (
+          <DayColumn key={d.date} overview={d} index={i} isToday={d.date === today} isPast={d.date < today} onOpenDay={onOpenDay} />
         ))}
       </ul>
     </section>

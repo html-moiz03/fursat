@@ -51,7 +51,7 @@ export function DayHoursCard() {
       </div>
 
       {outside > 0 && (
-        <p role="status" className="text-sm text-amber-700">
+        <p role="status" className="text-sm text-warn-ink">
           {outside} placed {outside === 1 ? 'task is' : 'tasks are'} outside these hours, so{' '}
           {outside === 1 ? 'it is' : 'they are'} only partly shown or hidden.
         </p>

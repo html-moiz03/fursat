@@ -15,6 +15,7 @@ import { formatDuration, nowMinutes, todayString } from '../lib/time';
 import { firstStart } from '../lib/week';
 import type { Task } from '../types';
 import { usePlannerStore } from '../store/usePlannerStore';
+import { useToasts } from '../store/useToasts';
 
 const ActiveTaskContext = createContext<Task | null>(null);
 
@@ -31,6 +32,7 @@ export function PlannerDnd({ children }: { children: ReactNode }) {
   const date = usePlannerStore((s) => s.selectedDate);
   const planTask = usePlannerStore((s) => s.planTask);
   const planTaskOnDay = usePlannerStore((s) => s.planTaskOnDay);
+  const showToast = useToasts((s) => s.show);
   const dayStartMin = usePlannerStore((s) => s.settings.dayStartMin);
   const [activeId, setActiveId] = useState<string | null>(null);
 
@@ -51,12 +53,15 @@ export function PlannerDnd({ children }: { children: ReactNode }) {
     // Week view: dropped on a whole day.
     const day = e.over?.data.current?.day as string | undefined;
     if (task && day) {
-      planTaskOnDay(task.id, day, firstStart(day, todayString(), nowMinutes(), dayStartMin));
+      const ok = planTaskOnDay(task.id, day, firstStart(day, todayString(), nowMinutes(), dayStartMin));
+      if (!ok) showToast(`No room for ${formatDuration(task.durationMin)} on that day.`, 'warn');
       return;
     }
     const zone = e.over?.data.current?.zone as Range | undefined;
     if (!task || !zone) return;
-    if (checkFit(task.durationMin, zone, []).fits) planTask(task.id, date, zone.startMin);
+    const verdict = checkFit(task.durationMin, zone, []);
+    if (verdict.fits) planTask(task.id, date, zone.startMin);
+    else showToast(`Too short: needs ${formatDuration(task.durationMin)}, this gap is ${formatDuration(zone.endMin - zone.startMin)}.`, 'warn');
   }
 
   return (

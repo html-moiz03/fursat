@@ -1,5 +1,7 @@
+import { m } from 'motion/react';
 import { usePlannerStore } from '../store/usePlannerStore';
 import { InstallButton } from './InstallButton';
+import { ThemeSwitch } from './ThemeSwitch';
 
 export type View = 'today' | 'week' | 'anchors';
 
@@ -63,27 +65,37 @@ export function Sidebar({ view, onChange }: { view: View; onChange: (v: View) =>
     <>
       <aside className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col gap-8 p-5 md:flex">
         <Brand />
-        <nav aria-label="Main" className="rounded-2xl bg-card p-2 ring-1 ring-line">
+        <nav aria-label="Main" className="rounded-2xl bg-card p-2 ring-1 ring-line backdrop-blur-md">
           {ITEMS.map(({ view: v, label, Icon }) => (
             <button
               key={v}
               type="button"
               onClick={() => onChange(v)}
               aria-current={view === v ? 'page' : undefined}
-              className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium ${
-                view === v ? 'bg-brand-soft text-brand' : 'text-muted hover:text-ink'
+              className={`relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium ${
+                view === v ? 'text-brand' : 'text-muted hover:text-ink'
               }`}
             >
-              <Icon />
-              <span className="flex-1">{label}</span>
-              {counts[v] > 0 && (
-                <span className="rounded-full bg-page px-2 py-0.5 text-xs text-muted">{counts[v]}</span>
+              {view === v && (
+                <m.span
+                  layoutId="nav-pill"
+                  className="absolute inset-0 rounded-xl bg-brand-soft"
+                  transition={{ type: 'spring', stiffness: 480, damping: 36 }}
+                />
               )}
+              <span className="relative flex flex-1 items-center gap-3">
+                <Icon />
+                <span className="flex-1">{label}</span>
+                {counts[v] > 0 && (
+                  <span className="rounded-full bg-page px-2 py-0.5 text-xs text-muted">{counts[v]}</span>
+                )}
+              </span>
             </button>
           ))}
         </nav>
         <div className="mt-auto space-y-4">
           <InstallButton />
+          <ThemeSwitch />
           <p className="text-xs leading-relaxed text-muted">
             Fix what can't move. Fursat shows the time that's left.
           </p>
@@ -92,7 +104,7 @@ export function Sidebar({ view, onChange }: { view: View; onChange: (v: View) =>
 
       <nav
         aria-label="Main"
-        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-card md:hidden"
+        className="fixed inset-x-0 bottom-0 z-20 flex border-t border-line bg-card backdrop-blur-xl md:hidden"
       >
         {ITEMS.map(({ view: v, label, Icon }) => (
           <button
@@ -100,10 +112,17 @@ export function Sidebar({ view, onChange }: { view: View; onChange: (v: View) =>
             type="button"
             onClick={() => onChange(v)}
             aria-current={view === v ? 'page' : undefined}
-            className={`flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium ${
+            className={`relative flex flex-1 flex-col items-center gap-0.5 py-2 text-xs font-medium ${
               view === v ? 'text-brand' : 'text-muted'
             }`}
           >
+            {view === v && (
+              <m.span
+                layoutId="nav-pill-mobile"
+                className="absolute inset-x-3 top-0 h-0.5 rounded-full bg-brand"
+                transition={{ type: 'spring', stiffness: 480, damping: 36 }}
+              />
+            )}
             <Icon />
             {label}
           </button>

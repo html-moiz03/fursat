@@ -1,3 +1,4 @@
+import { m } from 'motion/react';
 import { useState } from 'react';
 import { overdueTasks } from '../lib/carryOver';
 import { nowMinutes, todayString } from '../lib/time';
@@ -48,19 +49,24 @@ export function CarryOverNotice() {
   }
 
   return (
-    <div role="status" className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl bg-amber-50 px-4 py-3 text-sm text-amber-900">
+    <m.div
+      role="status"
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-warn px-4 py-3 text-sm text-warn-ink ring-1 ring-warn-line"
+    >
       <p className="min-w-0 flex-1">
         {overdue.length} unfinished {overdue.length === 1 ? 'task' : 'tasks'} from earlier days:{' '}
         <span className="font-medium">{overdue.map((t) => t.title).join(', ')}</span>
       </p>
       <div className="flex gap-2">
-        <button type="button" onClick={moveToToday} className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-on-brand">
+        <button type="button" onClick={moveToToday} className="rounded-full bg-brand px-4 py-1.5 text-sm font-medium text-on-brand">
           Move to today
         </button>
-        <button type="button" onClick={backToInbox} className="rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-sm">
+        <button type="button" onClick={backToInbox} className="rounded-full border border-warn-line bg-card px-4 py-1.5 text-sm text-ink">
           Back to inbox
         </button>
       </div>
-    </div>
+    </m.div>
   );
 }

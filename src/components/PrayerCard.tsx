@@ -100,7 +100,7 @@ export function PrayerCard() {
           <button
             type="button"
             onClick={() => setPrayerSettings({ enabled: false })}
-            className="rounded-lg border border-line px-3 py-1.5 text-sm text-muted hover:text-red-600"
+            className="rounded-lg border border-line px-3 py-1.5 text-sm text-muted hover:text-danger-line"
           >
             Turn off
           </button>
@@ -118,7 +118,7 @@ export function PrayerCard() {
         </p>
       )}
       {saved.enabled && status === 'error' && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-danger-line">
           {message}{' '}
           <button type="button" onClick={bumpRetry} className="underline">
             Try again

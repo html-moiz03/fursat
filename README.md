@@ -7,7 +7,7 @@ A day planner that starts from your fixed commitments ("anchors": work, class, m
 ```bash
 npm install
 npm run dev      # http://localhost:5173
-npm test         # unit tests for the gap logic
+npm test         # unit tests for the planning logic
 npm run build    # type-check + production build
 ```
 
@@ -31,7 +31,9 @@ npm run build    # type-check + production build
 - Installable as an app (phone home screen or desktop) and works offline: the whole app is cached by a service worker, with a quiet "update ready" notice when a new version is deployed
 - A new visitor starts empty, with a one-click sample day; "Clear all data" is on the Anchors page
 - Everything is saved in the browser (localStorage). The only thing sent out is the city and country you enter for prayer times
-- One calm light theme
+- Two themes: the calm light one (default) and a dark "Midnight" one with a slow drifting glow and film grain, plus Auto to follow the device. The switch is in the sidebar (top right on a phone)
+- Motion that helps: views fade between each other, blocks spring into place, the free-time counter glides, a ring shows how much of the day is done and a bar shows the current item's progress. All of it switches off for people who ask their device to reduce motion
+- Friendlier: keyboard shortcuts (press ? to list them: T today, W week, A anchors, N new task, arrows for the previous or next day), a toast that says why a drop did not fit, and a three-step intro for first-time visitors
 
 ## Where things live
 
@@ -53,11 +55,14 @@ src/
   lib/week.test.ts          tests for week boundaries and the per-day overview
   lib/carryOver.ts          overdueTasks() and planCarryOver()
   lib/carryOver.test.ts     tests for the carry-over rules
+  lib/theme.ts              resolveTheme() and the hook that sets data-theme on <html>
+  lib/shortcuts.ts          which key does what (pure, tested)
+  lib/useTween.ts           a number that glides to its new value
   lib/fit.ts                freeRanges(), checkFit(), fitFrom(), placedOn(), hasConflict()
   lib/fit.test.ts           35 tests for the task-fitting rules
   store/usePlannerStore.ts  Zustand store, persisted under "fursat:v1"
   store/usePlannerStore.test.ts  14 tests for editing anchors, moving placed tasks, dropping on a day and carry-over
-  components/               Sidebar, Greeting, EmptyStart, PlannerDnd (drag and drop), MonthCalendar, Timeline, TaskInbox, TaskBlock, DaySummary, AnchorForm, AnchorList, DataControls, PrayerCard, DayHoursCard, WindowNotice, WeekView, CarryOverNotice, InstallButton, PwaStatus, Card
+  components/               Sidebar, Greeting, EmptyStart, PlannerDnd (drag and drop), MonthCalendar, Timeline, TaskInbox, TaskBlock, DaySummary, AnchorForm, AnchorList, DataControls, PrayerCard, DayHoursCard, ThemeSwitch, Aurora, Toaster, ShortcutHelp, Motion, WindowNotice, WeekView, CarryOverNotice, InstallButton, PwaStatus, Card
 ```
 
 Times are stored as minutes since midnight and dates as `YYYY-MM-DD` strings, so the gap maths is plain integer work with no timezone bugs.

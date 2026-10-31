@@ -1,6 +1,11 @@
 @import "tailwindcss";
 
-/* Fursat: one calm light theme. Warm off-white page, white cards, soft sage accent. */
+/*
+ * Fursat has two themes that share one set of tokens.
+ *   Calm      (light, default): warm off-white, white cards, soft sage accent.
+ *   Midnight  (dark): near-black, glassy cards, mint accent, a slow drifting glow.
+ * The theme is chosen with data-theme on <html> (see lib/theme.ts).
+ */
 :root {
   color-scheme: light;
   --page: #f8f7f3;
@@ -11,6 +16,52 @@
   --brand: #3f8a76;
   --brand-soft: #e8f2ed;
   --on-brand: #ffffff;
+
+  --task-bg: #e3f0fb;
+  --task-line: #3b82b8;
+  --task-ink: #17415f;
+  --danger-bg: #fde8e8;
+  --danger-line: #dc4a4a;
+  --danger-ink: #7a1d1d;
+  --warn-bg: #fdf3dc;
+  --warn-line: #efd49a;
+  --warn-ink: #7a4b08;
+
+  --card-shadow: 0 1px 2px rgb(44 58 53 / 0.04), 0 8px 24px -12px rgb(44 58 53 / 0.1);
+  --glow-a: #8fd3bb;
+  --glow-b: #f3c9a0;
+  --glow-c: #a9c8ee;
+  --glow-opacity: 0.32;
+  --grain-opacity: 0.035;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #090b0e;
+  --card: rgb(18 22 27 / 0.72);
+  --ink: #eaf0ed;
+  --muted: #8896a0;
+  --line: rgb(255 255 255 / 0.08);
+  --brand: #7be0b0;
+  --brand-soft: rgb(123 224 176 / 0.1);
+  --on-brand: #06150f;
+
+  --task-bg: #10283a;
+  --task-line: #4aa3dd;
+  --task-ink: #cfe8fb;
+  --danger-bg: #3a1416;
+  --danger-line: #f07178;
+  --danger-ink: #ffd4d6;
+  --warn-bg: #33270d;
+  --warn-line: #6b5217;
+  --warn-ink: #f6d28b;
+
+  --card-shadow: 0 0 0 1px rgb(255 255 255 / 0.02), 0 24px 48px -24px rgb(0 0 0 / 0.7);
+  --glow-a: #14705a;
+  --glow-b: #9a5a1c;
+  --glow-c: #1d4f9a;
+  --glow-opacity: 0.6;
+  --grain-opacity: 0.07;
 }
 
 @theme inline {
@@ -22,6 +73,19 @@
   --color-brand: var(--brand);
   --color-brand-soft: var(--brand-soft);
   --color-on-brand: var(--on-brand);
+  --color-task: var(--task-bg);
+  --color-task-line: var(--task-line);
+  --color-task-ink: var(--task-ink);
+  --color-danger: var(--danger-bg);
+  --color-danger-line: var(--danger-line);
+  --color-danger-ink: var(--danger-ink);
+  --color-warn: var(--warn-bg);
+  --color-warn-line: var(--warn-line);
+  --color-warn-ink: var(--warn-ink);
+}
+
+input[type='checkbox'] {
+  accent-color: var(--brand);
 }
 
 body {
@@ -30,4 +94,161 @@ body {
   color: var(--ink);
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   line-height: 1.5;
+  transition: background-color 0.4s ease, color 0.4s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+::selection {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+
+/* Surfaces ------------------------------------------------------------- */
+
+.surface {
+  background: var(--card);
+  box-shadow: var(--card-shadow), 0 0 0 1px var(--line);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+}
+
+/* Big type -------------------------------------------------------------- */
+
+.display {
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 0.98;
+}
+
+.text-gradient {
+  background: linear-gradient(100deg, var(--brand), #4f86c6 115%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+:root[data-theme="dark"] .text-gradient {
+  background: linear-gradient(100deg, var(--brand), #6bb3ff 110%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Ambient background: slow drifting glow + film grain -------------------- */
+
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.aurora i {
+  position: absolute;
+  width: 55vmax;
+  height: 55vmax;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: var(--glow-opacity);
+  will-change: transform;
+  animation: drift 34s ease-in-out infinite alternate;
+}
+
+.aurora i:nth-child(1) { background: var(--glow-a); top: -22vmax; left: -14vmax; }
+.aurora i:nth-child(2) { background: var(--glow-b); bottom: -26vmax; left: 30vw; animation-duration: 42s; animation-delay: -12s; }
+.aurora i:nth-child(3) { background: var(--glow-c); top: -10vmax; right: -22vmax; animation-duration: 48s; animation-delay: -24s; }
+
+@keyframes drift {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  50%  { transform: translate3d(6vmax, 4vmax, 0) scale(1.12); }
+  to   { transform: translate3d(-5vmax, 7vmax, 0) scale(0.94); }
+}
+
+.grain {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Small details ------------------------------------------------------------ */
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position: 200% 0; }
+}
+
+.shimmer {
+  background-image: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.18) 50%, transparent 70%);
+  background-size: 200% 100%;
+  animation: shimmer 3.2s linear infinite;
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(0.8); opacity: 0.7; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+.pulse-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+kbd {
+  font: inherit;
+  font-size: 0.7rem;
+  padding: 0.05rem 0.4rem;
+  border-radius: 0.4rem;
+  border: 1px solid var(--line);
+  background: var(--page);
+  color: var(--muted);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora i,
+  .shimmer,
+  .pulse-dot::after {
+    animation: none;
+  }
+  body {
+    transition: none;
+  }
+}
+
+/* Buttons feel pressable ------------------------------------------------- */
+
+button:not(:disabled),
+select:not(:disabled),
+summary {
+  transition: transform 0.15s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    opacity 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+.lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.lift:hover {
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button:not(:disabled):active { transform: none; }
+  .lift:hover { transform: none; }
 }

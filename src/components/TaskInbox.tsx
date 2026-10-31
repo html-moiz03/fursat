@@ -1,4 +1,5 @@
 import { useDraggable } from '@dnd-kit/core';
+import { AnimatePresence, m } from 'motion/react';
 import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 import { checkFit, largestRoom, placedOn } from '../lib/fit';
 import { computeGaps } from '../lib/gaps';
@@ -73,11 +74,17 @@ export function TaskInbox() {
   return (
     <section className="space-y-3">
       <form onSubmit={onSubmit} className="space-y-3">
-        <h2 className="text-base font-semibold">Add a task</h2>
+        <h2 className="flex items-center justify-between text-base font-semibold">
+          Add a task
+          <span className="hidden items-center gap-1 text-xs font-normal text-muted md:flex">
+            press <kbd>N</kbd>
+          </span>
+        </h2>
 
         <label className="block text-sm">
           <span className="mb-1 block text-muted">What needs doing</span>
           <input
+            id="task-title"
             className={`${field} w-full`}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -105,7 +112,7 @@ export function TaskInbox() {
                 key={p}
                 type="button"
                 onClick={() => setMinutes(String(p))}
-                className={`rounded-md border px-2 py-0.5 text-xs ${
+                className={`rounded-full border px-2.5 py-0.5 text-xs ${
                   duration === p
                     ? 'border-brand bg-brand text-on-brand'
                     : 'border-line'
@@ -116,7 +123,7 @@ export function TaskInbox() {
             ))}
           </div>
           {!durationValid && (
-            <p className="mt-1 text-xs text-red-600">
+            <p className="mt-1 text-xs text-danger-line">
               Enter a whole number of minutes from {MIN_DURATION} to {MAX_DURATION}.
             </p>
           )}
@@ -125,7 +132,7 @@ export function TaskInbox() {
         <button
           type="submit"
           disabled={!title.trim() || !durationValid}
-          className="rounded-md bg-brand px-3 py-1.5 text-sm font-medium text-on-brand disabled:opacity-40"
+          className="rounded-full bg-brand px-4 py-1.5 text-sm font-medium text-on-brand disabled:opacity-40"
         >
           Add to inbox
         </button>
@@ -134,9 +141,16 @@ export function TaskInbox() {
       <div>
         <h2 className="mb-2 text-base font-semibold">Inbox ({inbox.length})</h2>
         {inbox.length === 0 ? (
-          <p className="text-sm text-muted">Nothing waiting. Add a task, then drag it into a free gap.</p>
+          <div className="flex items-center gap-3 rounded-2xl border border-dashed border-line px-4 py-5 text-sm text-muted">
+            <svg className="h-8 w-8 shrink-0 text-brand" viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="4" y="9" width="24" height="16" rx="4" />
+              <path d="M4 17h6l2 3h8l2-3h6" />
+            </svg>
+            <p>Nothing waiting. Add a task, then drag it into a free gap.</p>
+          </div>
         ) : (
           <ul className="space-y-2">
+            <AnimatePresence initial={false}>
             {inbox.map((t) => {
               const fits = gaps.map((g) => ({ gap: g, result: checkFit(t.durationMin, g, placed) }));
               const fitCount = fits.filter((f) => f.result.fits).length;
@@ -148,9 +162,14 @@ export function TaskInbox() {
               else note = `Too long for every gap today. Closest is ${formatDuration(Math.min(...shortfalls))} short.`;
 
               return (
-                <li
+                <m.li
                   key={t.id}
-                  className="space-y-1.5 rounded-xl border border-line px-3 py-2 text-sm"
+                  layout
+                  initial={{ opacity: 0, scale: 0.94, y: 8 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.92 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+                  className="space-y-1.5 rounded-2xl border border-line bg-page/50 px-3 py-2 text-sm"
                 >
                   <div className="flex items-center gap-2">
                     <DragHandle id={t.id} title={t.title} />
@@ -161,14 +180,14 @@ export function TaskInbox() {
                     <button
                       type="button"
                       onClick={() => removeTask(t.id)}
-                      className="text-xs text-muted hover:text-red-600"
+                      className="text-xs text-muted hover:text-danger-line"
                       aria-label={`Delete ${t.title}`}
                     >
                       Delete
                     </button>
                   </div>
 
-                  <p className={`text-xs ${fitCount > 0 ? 'text-brand' : 'text-amber-700'}`}>
+                  <p className={`text-xs ${fitCount > 0 ? 'text-brand' : 'text-warn-ink'}`}>
                     {note}
                   </p>
 
@@ -190,9 +209,10 @@ export function TaskInbox() {
                       ))}
                     </select>
                   )}
-                </li>
+                </m.li>
               );
             })}
+            </AnimatePresence>
           </ul>
         )}
       </div>

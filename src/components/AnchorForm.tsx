@@ -102,7 +102,7 @@ export function AnchorForm({ anchor, onDone }: Props) {
         </div>
       </fieldset>
 
-      {sameTime && <p className="text-xs text-red-600">Start and end can't be the same time.</p>}
+      {sameTime && <p className="text-xs text-danger-line">Start and end can't be the same time.</p>}
       <p className="text-xs text-muted">If the end is earlier than the start, the anchor runs past midnight.</p>
 
       <div className="flex gap-2">

@@ -1,4 +1,5 @@
 import { useDraggable } from '@dnd-kit/core';
+import { m } from 'motion/react';
 import type { Task } from '../types';
 import { fromMinutes } from '../lib/time';
 import { usePlannerStore } from '../store/usePlannerStore';
@@ -21,16 +22,16 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
   const range = `${fromMinutes(start)}–${fromMinutes(start + task.durationMin)}`;
 
   const colors = conflict
-    ? 'border-red-500 bg-red-100 text-red-900'
-    : 'border-sky-600 bg-sky-100 text-sky-900';
+    ? 'border-danger-line bg-danger text-danger-ink'
+    : 'border-task-line bg-task text-task-ink';
 
   return (
-    <div
+    <m.div
       ref={setNodeRef}
-      className={`absolute left-4 right-4 z-[5] flex items-center gap-2 overflow-hidden rounded-md border px-2 text-xs leading-none ${colors} ${
-        isDragging ? 'opacity-40' : ''
-      }`}
-      style={{ top, height }}
+      className={`absolute left-4 right-4 z-[5] flex items-center gap-2 overflow-hidden rounded-lg border px-2 text-xs leading-none shadow-sm ${colors}`}
+      initial={{ opacity: 0, scale: 0.9, top, height }}
+      animate={{ opacity: isDragging ? 0.4 : 1, scale: 1, top, height }}
+      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
       title={`${task.title}, ${range}${conflict ? ' (overlaps something else)' : ''}`}
     >
       <button
@@ -61,6 +62,6 @@ export function TaskBlock({ task, top, height, conflict }: Props) {
       >
         ×
       </button>
-    </div>
+    </m.div>
   );
 }

@@ -40,7 +40,7 @@ export function DataControls() {
             </button>
           )}
           {(hasAnchors || hasTasks || hasPrayer) && (
-            <button type="button" className={`${button} text-muted hover:text-red-600`} onClick={() => setConfirming(true)}>
+            <button type="button" className={`${button} text-muted hover:text-danger-line`} onClick={() => setConfirming(true)}>
               Clear all data
             </button>
           )}
