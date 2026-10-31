@@ -1,8 +1,10 @@
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { m } from 'motion/react';
 import { useMemo } from 'react';
+import { dayTotals, formatFocused } from '../lib/focusLog';
 import { formatDuration, fromMinutes, nowMinutes, todayString } from '../lib/time';
 import { dayOverview, firstStart, slotOnDay, weekDates, type DayOverview } from '../lib/week';
+import { useFocus } from '../store/useFocus';
 import { usePlannerStore } from '../store/usePlannerStore';
 import { useActiveTask } from './PlannerDnd';
 
@@ -59,10 +61,10 @@ function InboxChip({ id, title, durationMin }: { id: string; title: string; dura
   );
 }
 
-type ColumnProps = { overview: DayOverview; index: number; isToday: boolean; isPast: boolean; onOpenDay: (date: string) => void };
+type ColumnProps = { overview: DayOverview; focusedMin: number; index: number; isToday: boolean; isPast: boolean; onOpenDay: (date: string) => void };
 
 /** One day. While a task is dragged it says whether the task fits and accepts the drop. */
-function DayColumn({ overview: d, index, isToday, isPast, onOpenDay }: ColumnProps) {
+function DayColumn({ overview: d, focusedMin, index, isToday, isPast, onOpenDay }: ColumnProps) {
   const active = useActiveTask();
   const anchors = usePlannerStore((s) => s.anchors);
   const tasks = usePlannerStore((s) => s.tasks);
@@ -114,6 +116,7 @@ function DayColumn({ overview: d, index, isToday, isPast, onOpenDay }: ColumnPro
           {day} <span className="text-sm font-normal text-muted">{month}</span>
         </span>
         <span className="block text-xs text-muted">{formatDuration(d.freeMin)} free</span>
+        {focusedMin > 0 && <span className="block text-xs font-medium text-brand">{formatFocused(focusedMin)} focused</span>}
       </button>
 
       {hint && <p className={`mb-2 text-xs font-medium ${fits ? 'text-brand' : 'text-muted'}`}>{hint}</p>}
@@ -158,6 +161,9 @@ export function WeekView({ onOpenDay }: { onOpenDay: (date: string) => void }) {
     () => weekDates(selected).map((date) => dayOverview(anchors, tasks, date, { dayStartMin, dayEndMin, minGapMin })),
     [anchors, tasks, selected, dayStartMin, dayEndMin, minGapMin],
   );
+  const log = useFocus((s) => s.log);
+  const focused = useMemo(() => dayTotals(log, days.map((d) => d.date)), [log, days]);
+  const totalFocused = focused.reduce((sum, n) => sum + n, 0);
   const inbox = tasks.filter((t) => t.status === 'inbox');
 
   const totalFree = days.reduce((sum, d) => sum + d.freeMin, 0);
@@ -167,6 +173,7 @@ export function WeekView({ onOpenDay }: { onOpenDay: (date: string) => void }) {
     <section aria-label="Week overview">
       <p className="mb-4 text-sm text-muted">
         {formatDuration(totalFree)} free this week · {formatDuration(totalPlanned)} planned
+        {totalFocused > 0 && <> · <span className="font-medium text-brand">{formatFocused(totalFocused)} focused</span></>}
       </p>
 
       <div className="mb-4 rounded-2xl bg-card p-3 ring-1 ring-line">
@@ -186,7 +193,7 @@ export function WeekView({ onOpenDay }: { onOpenDay: (date: string) => void }) {
 
       <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-7">
         {days.map((d, i) => (
-          <DayColumn key={d.date} overview={d} index={i} isToday={d.date === today} isPast={d.date < today} onOpenDay={onOpenDay} />
+          <DayColumn key={d.date} overview={d} focusedMin={focused[i]} index={i} isToday={d.date === today} isPast={d.date < today} onOpenDay={onOpenDay} />
         ))}
       </ul>
     </section>

@@ -12,10 +12,12 @@ export type FocusSession = {
   /** Epoch ms when the current run began, or null while paused or finished. */
   runningSince: number | null;
   finished: boolean;
+  /** The task's name when the session began, kept for the log if the task is later deleted. */
+  title?: string;
 };
 
-export function startSession(taskId: string, durationMin: number, now: number): FocusSession {
-  return { taskId, durationMs: durationMin * 60_000, elapsedMs: 0, runningSince: now, finished: false };
+export function startSession(taskId: string, durationMin: number, now: number, title?: string): FocusSession {
+  return { taskId, durationMs: durationMin * 60_000, elapsedMs: 0, runningSince: now, finished: false, title };
 }
 
 export function elapsedMs(s: FocusSession, now: number): number {
